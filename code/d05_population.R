@@ -122,20 +122,24 @@ data_pop_label <- data_pop %>%
          y = ymin + (ymax - ymin)/2) %>% 
   filter(population > 1)
 
-ggplot(data = data_pop, aes(x = year, y = population, fill = region)) +
+plot_raw <- ggplot(data = data_pop, aes(x = year, y = population, fill = region)) +
   geom_area(color = "white", show.legend = FALSE) +
   geom_line(data = data_pop_global_all, aes(x = year, y = population), linewidth = 0.5, color = "black") +
   geom_point(data = data_pop_global, aes(x = year, y = population), size = 2,
              shape = 21, color = "white", fill = "black") +
   scale_fill_manual(values = colorRampPalette(c("#82ccdd", "#0c2461"))(10)) +
-  geom_text(data = data_pop_label, aes(x = 2020.5, y = y, label = region),
-                 family = font_choose_graph, size = 2, hjust = 0) +
-  geom_text(data = data_pop_global, aes(x = year, y = population, label = population),
-            family = font_choose_graph, size = 2, hjust = 0.5, vjust = -1) +
   labs(x = "Year", y = "Inhabitants (millions)") +
   theme_graph() +
   theme(plot.background = element_rect(fill = "transparent", color = NA),
         plot.margin = unit(c(0.2,3,0.2,0.2), "cm")) +
-  lims(y = c(0, 120), x = c(1999, 2025))
+  lims(y = c(0, 120), x = c(1999, 2025)) +
+  geom_text(data = data_pop_global, aes(x = year, y = population, label = population),
+            family = font_choose_graph, size = 4, hjust = 0.5, vjust = -1.5)
 
-ggsave("figs/02_part-1/fig-population_raw.pdf", width = 8, height = 5, dpi = fig_resolution, bg = "transparent")
+ggsave("figs/02_part-1/fig_population-raw.pdf", width = 8, height = 5, dpi = fig_resolution, bg = "transparent")
+
+plot_label <- plot_raw +
+  geom_text(data = data_pop_label, aes(x = 2020.5, y = y, label = region),
+            family = font_choose_graph, size = 2, hjust = 0)
+
+ggsave("figs/02_part-1/fig_population-label.pdf", width = 8, height = 5, dpi = fig_resolution, bg = "transparent")

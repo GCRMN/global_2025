@@ -106,8 +106,9 @@ plot_i <- ggplot() +
         legend.title = element_text(size = 24, face = "bold", hjust = 0.5, family = font_choose_map, color = "#2c3e50"),
         legend.text = element_text(size = 22, family = font_choose_map),
         panel.border = element_rect(fill = NA, color = "black"),
-        panel.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "transparent"),
         panel.grid = element_blank(),
+        legend.background = element_rect(fill = "transparent"),
         plot.background = element_rect(fill = "transparent", color = NA),
         axis.ticks.length = unit(-0.1, "cm"),
         axis.text = element_text(family = font_choose_map, color = "black", size = 12, margin = margin(t = -6)),
@@ -117,7 +118,7 @@ plot_i <- ggplot() +
         axis.text.y.right = element_text(angle = -90, hjust = 0.5, vjust = -7)) +
   guides(color = guide_legend(override.aes = list(size = 3)))
 
-ggsave("figs/02_part-1/fig-7.png", dpi = 600, height = 4, width = 12)
+ggsave("figs/02_part-1/fig_monitoring-map-global.png", dpi = 600, height = 4, width = 12)
 
 # 5. Monitoring map (regions) ----
 
@@ -252,7 +253,7 @@ data_benthic %>%
         plot.background = element_rect(fill = "transparent", colour = NA)) +
   scale_x_continuous(expand = c(0, 0), limits = c(1969, 2026))
 
-ggsave("figs/02_part-1/fig-X.png", width = 5, height = 4, dpi = fig_resolution, bg = "transparent")
+ggsave("figs/02_part-1/fig_surveys-per-year.png", width = 5, height = 4, dpi = fig_resolution, bg = "transparent")
 
 ## 7.2 Regional ----
 
