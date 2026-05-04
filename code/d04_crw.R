@@ -3,6 +3,7 @@
 library(tidyverse)
 library(ggtext)
 library(patchwork)
+library(tidybayes)
 
 # 2. Source functions ----
 
@@ -274,34 +275,63 @@ write.csv(data_sst_trends, file = "figs/08_text-gen/thermal_regime.csv", row.nam
 
 # 7. Figure for part 1 ----
 
-## 7.1 Plot for hard coral cover ----
+## 7.1 Plot of SST ----
 
-load("data/model-results.RData")
+load("data/02_misc/data_sst.RData")
 
-data_models <- data_models %>% 
-  filter(level == "global" & category == "Hard coral" & year >= 1985 & year < 2025) %>% 
-  mutate(abs_change = mean - lag(mean),
-         date = as.Date(paste0(year, "-06-01")),
-         color = case_when(abs_change < 0 ~ "#d64541",
-                           abs_change > 0 ~ "#2c82c9"))
+data_sst_anom <- data_sst %>% 
+  filter(region == "All") %>% 
+  group_by(region) %>% 
+  mutate(sst_mean = mean(sst)) %>% 
+  ungroup() %>% 
+  mutate(year = year(date),
+         sst_anom = sst - sst_mean)
 
-plot_a <- ggplot(data = data_models, aes(x = date, y = abs_change, fill = color)) +
-  geom_bar(stat = "identity") +
-  scale_fill_identity() +
-  geom_hline(yintercept = 0, linewidth = 0.3) +
+plot_a <- ggplot(data = data_sst_anom, aes(x = date, y = sst)) +
+  geom_line(linewidth = 0.2) +
   scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
   theme_graph() +
-  theme(legend.title.position = "top",
-        legend.title = element_text(hjust = 0.5),
-        axis.title.y = element_markdown(),
+  theme(plot.background = element_blank()) +
+  theme(axis.title.y = element_markdown(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.line.x = element_blank(),
+        axis.title.x = element_blank()) +
+  labs(x = "Year", y = "Sea surface<br>temperature (°C)")
+
+## 7.2 Plot of ONI ----
+
+# https://psl.noaa.gov/data/timeseries/month/DS/ONI/
+
+data_oni <- read.csv("data/02_misc/oni.csv") %>% 
+  rename(date = Date, oni = 2) %>% 
+  mutate(date = as.Date(date),
+         oni = ifelse(oni < -9000, NA, oni)) %>% 
+  filter(date >= as.Date("1985-01-01"))
+
+plot_b <- ggplot(data = data_oni, aes(x = date, y = oni)) +
+  geom_hline(yintercept = 0, linewidth = 0.3) +
+  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni < 0.5, 0.5, oni)),
+              aes(x = date, ymin = 0.5, ymax = oni), fill = "#d64541", alpha = 0.5) +
+  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni < 1.5, 1.5, oni)),
+              aes(x = date, ymin = 1.5, ymax = oni), fill = "#d64541", alpha = 1) +
+  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -0.5, -0.5, oni)),
+              aes(x = date, ymin = -0.5, ymax = oni), fill = "#2c82c9", alpha = 0.5) +
+  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -1.5, -1.5, oni)),
+              aes(x = date, ymin = -1.5, ymax = oni), fill = "#2c82c9", alpha = 1) +
+  geom_path(linewidth = 0.2) +
+  scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
+  theme_graph() +
+  theme(axis.title.y = element_markdown(),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
         axis.line.x = element_blank(),
         axis.title.x = element_blank(),
         plot.background = element_blank()) +
-  labs(x = "Year", y = "Change in<br>hard coral cover")
+  theme(axis.title.y = element_markdown()) +
+  labs(x = "Year", y = "Oceanic<br>Niño index")
 
-## 7.2 Plot of DHW ----
+## 7.3 Plot of DHW ----
 
 load("data/02_misc/data_dhw_freq.RData")
 
@@ -328,7 +358,7 @@ data_dhw_freq <- data_dhw_freq %>%
                                                     "Alert 1", "Alert 2", "Alert 3", "Alert 4", "Alert 5"))) %>% 
   mutate(date = as.Date(paste0(year, "-06-01")))
 
-plot_b <- ggplot(data = data_dhw_freq) +
+plot_c <- ggplot(data = data_dhw_freq) +
   geom_bar(aes(x = date, y = freq, fill = heatstress), stat = "identity") +
   scale_fill_manual(values = c("No stress/Watch" = "lightgrey",
                                "Warning" = palette_second[1],
@@ -337,16 +367,16 @@ plot_b <- ggplot(data = data_dhw_freq) +
                                "Alert 3" = palette_second[4],
                                "Alert 4" = palette_second[5],
                                "Alert 5" = "black"),
-                    name = "Heat stress level") +
+                    name = "Heat stress level\n") +
   scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
   theme_graph() +
   theme(legend.position = "right",
         legend.title.position = "top",
         legend.direction = "vertical",
         legend.background = element_blank(),
-        legend.title = element_text(hjust = 0.5, size = 10),
+        legend.title = element_text(hjust = 0, size = 13, family = font_choose_graph),
         legend.key.size = unit(0.5, "cm"),
-        legend.text = element_text(size = 8),
+        legend.text = element_text(size = 11),
         axis.title.y = element_markdown(),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -355,59 +385,61 @@ plot_b <- ggplot(data = data_dhw_freq) +
         plot.background = element_blank()) +
   labs(x = "Year", y = "Percentage<br>of coral reefs")
 
-plot_b
+## 7.4 Plot for hard coral cover ----
 
-## 7.3 Plot of ONI ----
+data_change <- readRDS("data/13_model-output_hbm/contrasts_global.rds") |> 
+  filter(category == "Hard coral") |>
+  pull(posteriors) |>
+  as.data.frame() |>
+  arrange(.draw, Year) |>
+  group_by(.draw) |>
+  mutate(previous_year = lag(Year),
+         value_diff = value - lag(value),
+         rel_diff = exp(log(value) - log(lag(value)))-1) |>
+  filter(!is.na(value_diff)) |>
+  ungroup() |>
+  select(.draw, Year, value_diff, rel_diff) |> 
+  group_by(Year) |>
+  summarise_draws(median = median,
+                  lower = ~quantile(., 0.025),
+                  upper = ~quantile(., 0.975),
+                  Pg = ~mean(.>0), 
+                  Pl = ~mean(.<0)) |> 
+  rename(Lower = '2.5%',
+         Upper = '97.5%') |> 
+  mutate(P = max(Pg, Pl),
+         change_type = case_when(P == Pg & P >= 0.90 ~ "Increase",
+                                 P != Pg & P >= 0.90 ~ "Decrease",
+                                 P < 0.90 ~ "No change")) |>  
+  filter(variable == "rel_diff" & Year >= 1985 & Year <= 2024) %>% 
+  mutate(across(c(median, Lower, Upper), ~.x*100),
+         date = as.Date(paste0(Year, "-06-01")),
+         change_type = factor(change_type, levels = c("Increase", "No change", "Decrease")))
 
-# https://psl.noaa.gov/data/timeseries/month/DS/ONI/
-
-data_oni <- read.csv("data/02_misc/oni.csv") %>% 
-  rename(date = Date, oni = 2) %>% 
-  mutate(date = as.Date(date),
-         oni = ifelse(oni < -9000, NA, oni)) %>% 
-  filter(date >= as.Date("1985-01-01"))
-
-plot_c <- ggplot(data = data_oni, aes(x = date, y = oni)) +
+plot_d <- ggplot(data = data_change, aes(x = date)) +
   geom_hline(yintercept = 0, linewidth = 0.3) +
-  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni < 0.5, 0.5, oni)),
-              aes(x = date, ymin = 0.5, ymax = oni), fill = "#d64541", alpha = 0.5) +
-  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni < 1.5, 1.5, oni)),
-              aes(x = date, ymin = 1.5, ymax = oni), fill = "#d64541", alpha = 1) +
-  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -0.5, -0.5, oni)),
-              aes(x = date, ymin = -0.5, ymax = oni), fill = "#2c82c9", alpha = 0.5) +
-  geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -1.5, -1.5, oni)),
-              aes(x = date, ymin = -1.5, ymax = oni), fill = "#2c82c9", alpha = 1) +
-  geom_path(linewidth = 0.2) +
+  geom_crossbar(aes(y = median, ymin = Lower, ymax = Upper, fill = change_type, color = change_type),
+                alpha = 0.5, width = 300) +
+  scale_fill_manual(values = c("Increase" = "#2c82c9", "Decrease" = "#d64541", "No change" = "#f5f6fa"),
+                    name = "Statistical\nchange\n") +
+  scale_color_manual(values = c("Increase" = "#2c82c9", "Decrease" = "#d64541", "No change" = "#353b48"),
+                     name = "Statistical\nchange\n") +
   scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
   theme_graph() +
-  theme(axis.title.y = element_markdown(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        axis.line.x = element_blank(),
-        axis.title.x = element_blank(),
+  theme(legend.title.position = "top",
+        legend.position = "right",
+        legend.direction = "vertical",
+        legend.background = element_blank(),
+        legend.title = element_text(hjust = 0, size = 13, family = font_choose_graph),
+        legend.key.size = unit(0.5, "cm"),
+        legend.text = element_text(size = 11),
+        axis.title.y = element_markdown(),
+        #axis.text.x = element_blank(),
+        #axis.ticks.x = element_blank(),
+        #axis.line.x = element_blank(),
+        #axis.title.x = element_blank(),
         plot.background = element_blank()) +
-  theme(axis.title.y = element_markdown()) +
-  labs(x = "Year", y = "Oceanic<br>Niño index")
-
-## 7.4 Plot of SST ----
-
-load("data/02_misc/data_sst.RData")
-
-data_sst_anom <- data_sst %>% 
-  filter(region == "All") %>% 
-  group_by(region) %>% 
-  mutate(sst_mean = mean(sst)) %>% 
-  ungroup() %>% 
-  mutate(year = year(date),
-         sst_anom = sst - sst_mean)
-
-plot_d <- ggplot(data = data_sst_anom, aes(x = date, y = sst)) +
-  geom_line(linewidth = 0.2) +
-  scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
-  theme_graph() +
-  theme(plot.background = element_blank()) +
-  theme(axis.title.y = element_markdown()) +
-  labs(x = "Year", y = "Sea surface<br>temperature (°C)")
+  labs(x = "Year", y = "Relative change<br>in hard coral cover")
 
 ## 7.5 Combine the plots ----
 
@@ -418,4 +450,4 @@ plot_a + plot_b + plot_c + plot_d +
         plot.tag = element_text(face = "bold"),
         plot.margin = margin(20, 25, 10, 10))
 
-ggsave("figs/02_part-1/fig-2_raw.png", bg = "transparent", height = 12, width = 10, dpi = 300)
+ggsave("figs/02_part-1/fig_sst-dhw-oni-hcc.pdf", bg = "transparent", height = 12, width = 10)
