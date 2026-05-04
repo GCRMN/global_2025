@@ -28,7 +28,7 @@ data_contrasts <- readRDS("data/13_model-output_hbm/contrasts_global.rds") |>
   mutate(Contrast = case_when(Year %in% c(1997, 2000) ~ "1st GBE",
                               Year %in% c(2009, 2012) ~ "2nd GBE",
                               Year %in% c(2015, 2018) ~ "3rd GBE",
-                              Year %in% c(2022, 2024) ~ "4th GBE",
+                              Year %in% c(2023, 2024) ~ "4th GBE",
                               TRUE ~ NA_character_)) %>% 
   drop_na(Contrast) |> 
   group_by(.draw, Contrast) |>

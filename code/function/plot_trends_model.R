@@ -84,12 +84,12 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
     
     data_labels_plot <- tibble(type = c("decline", "decline", "decline", "decline",
                                         "recovery", "recovery", "recovery"),
-                          x = c(1999, 2011, 2017, 2024,
+                          x = c(1999, 2011, 2017, 2023.5,
                                 1992, 2005, 2019),
                           label = c("1<sup>st</sup> GBE<br><span style='color:#d73027;'>-6.5%</span>",
                                     "2<sup>nd</sup> GBE<br><span style='color:#d73027;'>-9.9%</span>",
                                     "3<sup>rd</sup> GBE<br><span style='color:#d73027;'>-6.6%</span>",
-                                    "4<sup>th</sup> GBE<br><span style='color:#d73027;'>-7.3%</span>",
+                                    "4<sup>th</sup> GBE<br><span style='color:#d73027;'>-8.9%</span>",
                                     "<span style='color:#03a678;'>+5.1%</span><br><span style='font-size:8pt;'>Weak evidence</span>",
                                     "<span style='color:#03a678;'>+4.8%</span><br><span style='font-size:8pt;'>Weak evidence</span>",
                                     "<span style='color:#03a678;'>+13.9%</span><br><span style='font-size:8pt;'>Strong evidence</span>"))
@@ -101,7 +101,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                     fill = "transparent", family = font_choose_graph, size = 4) +
       annotate("rect", xmin = 2010, xmax = 2012, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.4) +
       annotate("rect", xmin = 2016, xmax = 2018, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.4) +
-      annotate("rect", xmin = 2023, xmax = 2025, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.4) +
+      annotate("rect", xmin = 2023, xmax = 2024, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.4) +
       geom_ribbon(aes(ymin = lower_ci_95, ymax = upper_ci_95), alpha = 0.35, color = NA, fill = "#747d8c") +
       geom_ribbon(aes(ymin = lower_ci_80, ymax = upper_ci_80), alpha = 0.45, color = NA, fill = "#747d8c") +
       geom_line(aes(y = mean), color = "#747d8c") +
