@@ -28,114 +28,62 @@ plot_trends_model(level_i = "global", range = "full", category_i = "Hard coral")
 
 plot_trends_model(level_i = "global", range = "full", category_i = "Macroalgae")
 
-## 4.2 Regional - Hard coral and macroalgae ----
+## 4.2 Summary table ----
 
-export_subplots <- function(region_i, category_i){
+### 4.2.1 Weights ----
+
+data_weights <- read.csv("figs/08_text-gen/reefs_extent.csv") %>% 
+  filter(subregion == "All") %>% 
+  select(region, reef_extent_rel_world) %>% 
+  mutate(reef_extent_rel_world = round(reef_extent_rel_world, 1))
+
+plot_donut_weights <- function(region_i){
   
-  data_i <- data_models %>% 
-    group_by(category, level, region, subregion, ecoregion) %>% 
-    filter(year >= first_year & year <= last_year) %>% 
-    ungroup() %>% 
-    filter(category == category_i & level == "region") %>% 
-    left_join(., palette_regions)
-
-  plot_i <- ggplot(data = data_i %>% filter(region == region_i)) +
-    geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = color), alpha = 0.35) +
-    geom_ribbon(aes(x = year, ymin = lower_ci_80, ymax = upper_ci_80, fill = color), alpha = 0.45) +
-    geom_line(aes(x = year, y = mean, color = color)) +
-    scale_color_identity() +
+  data_i <- data_weights %>% 
+    mutate(color = case_when(region == region_i ~ "red",
+                             TRUE ~ "grey"))
+  
+  ggplot() +
+    geom_bar(data = data_i, aes(x = 2, y = reef_extent_rel_world, fill = color, group = 1),
+             stat = "identity", width = 1, show.legend = FALSE, color = "white", linewidth = 1) +
     scale_fill_identity() +
-    scale_x_continuous(breaks = c(1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025),
-                       limits = c(1979, 2026),
-                       labels = c("1980", "", "1990", "", "2000", "", "2010", "", "2020", "")) +
-    lims(y = c(0, max(data_i$upper_ci_95))) +
-    labs(x = "Year", y = "Cover (%)", title = case_when(region_i == "EAS" ~ "East Asian Seas",
-                                                        region_i == "ETP" ~ "Eastern Tropical Pacific",
-                                                        region_i == "WIO" ~ "Western Indian Ocean",
-                                                        TRUE ~ region_i)) +
-    theme_graph() +
-    theme(plot.title = element_blank(),
-          axis.title.x = element_text(size = 48),
-          axis.title.y = element_text(size = 48),
-          axis.text = element_text(size = 40),
-          plot.background = element_rect(fill = "transparent", color = NA))
+    coord_polar(theta = "y") +
+    xlim(0.5, 2.5) + # Create the hole of the donut
+    theme_void()
   
-  if(category_i == "Hard coral"){
-    
-    ggsave(filename = paste0("figs/02_part-1/fig-4_", str_to_lower(region_i), ".png"), plot = plot_i,
-           bg = "transparent", height = 5, width = 6, dpi = 600)
-    
-  }else{
-    
-    ggsave(filename = paste0("figs/02_part-1/fig-6_", str_to_lower(region_i), ".png"), plot = plot_i,
-           bg = "transparent", height = 5, width = 6, dpi = 600)
-    
-  }
+  ggsave(paste0("figs/02_part-1/fig_weight-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
+         height = 4, width = 4, bg = "transparent")
   
 }
 
-map(setdiff(unique(data_models$region), NA),
-    ~export_subplots(region_i = .x,
-                     category_i = "Hard coral"))
+map(data_weights$region, ~plot_donut_weights(region_i = .x))
 
-map(setdiff(unique(data_models$region), NA),
-    ~export_subplots(region_i = .x,
-                     category_i = "Macroalgae"))
+### 4.2.2 Trends ----
 
-## 4.3 Contrasts per region ----
+data_models2 <- data_models %>% 
+  filter(category == "Hard coral" & level == "region") %>% 
+  mutate(color = case_when(year <= 2009 ~ "red",
+                           year > 2009 & year < 2020 ~ "grey",
+                           year >= 2020 ~ "blue"))
 
-data_contrasts <- readxl::read_xlsx("data/02_misc/contrasts-global.xlsx") %>% 
-  mutate(region = str_replace_all(region, c("EAS" = "East Asian<br>Seas",
-                                            "ETP" = "Eastern Tropical<br>Pacific",
-                                            "WIO" = "Western Indian<br>Ocean")),
-         relative_change = case_when(is.na(relative_change) ~ 0,
-                                     TRUE ~ relative_change),
-         region = case_when(region == "Global" ~ "**Global**",
-                            TRUE ~ region),
-         region = fct_reorder(region, desc(relative_change)),
-         color = case_when(relative_change < 0 & evidence == "Strong evidence" ~ "#d63031",
-                           relative_change < 0 & evidence == "Evidence" ~ "#e17055",
-                           relative_change < 0 & evidence == "Weak evidence" ~ "#fab1a0",
-                           evidence == "No evidence" ~ NA,
-                           relative_change > 0 & evidence == "Weak evidence" ~ "#81ecec",
-                           relative_change > 0 & evidence == "Evidence" ~ "#74b9ff",
-                           relative_change > 0 & evidence == "Strong evidence" ~ "#0984e3"),
-         label = case_when(evidence == "No evidence" ~ NA,
-                           relative_change < 0 ~ paste0(relative_change, "%"),
-                           relative_change > 0 ~ paste0("+", relative_change, "%")),
-         color_label = case_when(relative_change < 0 ~ "#d63031",
-                           evidence == "No evidence" ~ NA,
-                           relative_change > 0 ~ "#0984e3"))
+plot_trends_periods <- function(region_i){
+  
+  ggplot(data = data_models2 %>% filter(region == region_i),
+         aes(x = year, y = mean, color = color, group = 1)) +
+    geom_line(linewidth = 2) +
+    scale_color_identity() +
+    theme_minimal() +
+    theme(axis.title = element_blank(),
+          axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          panel.grid = element_blank())
+  
+  ggsave(paste0("figs/02_part-1/fig_periods-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
+         height = 4, width = 6, bg = "transparent")
+  
+}
 
-ggplot(data = data_contrasts) +
-  geom_bar(aes(x = region, y = relative_change, fill = color), stat = "identity", width = 0.5) +
-  geom_hline(yintercept = 0, linewidth = 0.2) +
-  scale_fill_identity() +
-  geom_label(aes(x = region, y = 0, label = evidence,
-                vjust = ifelse(evidence == "No evidence", 0.5, -2.5),
-                hjust = case_when(relative_change < 0 ~ 1.05,
-                                  relative_change == 0 ~ 0.5,
-                                  relative_change > 0 ~ -0.05)),
-            color = "#576574", fontface = "italic", size = 3,
-            label.padding = unit(0.1, "lines"), border.color = NA) +
-  geom_label(aes(x = region, y = relative_change, label = label,
-                 color = color_label, hjust = ifelse(relative_change < 0, 1.2, -0.2)),
-                 fontface = "bold", size = 5, label.padding = unit(0.1, "lines"), border.color = NA) +
-  scale_color_identity() +
-  scale_y_continuous(limits = c(-70, 60),
-                     breaks = c(-50, -25, 0, 25, 50),
-                     labels = c("-50%", "-25%", "0%", "+25%", "+50%")) +
-  coord_flip() +
-  theme_graph() +
-  theme(axis.text.y = element_markdown(size = 16, lineheight = 0.75),
-        axis.text.x = element_markdown(size = 16),
-        axis.title.x = element_text(size = 20, lineheight = 0.6, vjust = -2),
-        plot.background = element_rect(fill = "transparent", color = NA)) +
-  labs(x = NULL, y = "Relative change in hard coral cover\nbetween 1980-2009 and 2020-2024")
-
-ggsave(filename = "figs/02_part-1/fig-5.png", bg = "transparent", height = 7, width = 4, dpi = 600)
-
-ggsave(filename = "figs/02_part-1/fig-5.pdf", bg = "transparent", height = 8, width = 5, dpi = 600)
+map(data_weights$region, ~plot_trends_periods(region_i = .x))
 
 # 5. Figures for Part 2 ----
 
@@ -169,9 +117,9 @@ map(setdiff(unique(data_models$region), NA),
     ~plot_trends_model(region_i = .x,
                  level_i = "ecoregion", category_i = "Macroalgae", range = "obs"))
 
-## 5.4 Modeled values per region for writing ----
+# 6. Modeled values per region ----
 
-### 5.4.1 Create the function ----
+## 6.1 Create the function ----
 
 export_model_data <- function(region_i, range){
   
@@ -228,7 +176,7 @@ export_model_data <- function(region_i, range){
   
 }
 
-### 5.4.2 Map over the function ----
+## 6.2 Map over the function ----
 
 map(setdiff(unique(data_models$region), NA),
     ~export_model_data(region_i = .x, range = "obs"))
