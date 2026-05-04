@@ -31,24 +31,7 @@ data_sst_anom <- data_sst %>%
   mutate(color = case_when(mean_sst_anom < 0 ~ "#2c82c9",
                            mean_sst_anom > 0 ~ "#d64541"))
 
-## 3.2 Global ----
-
-plot_i <- ggplot(data = data_sst_anom %>% filter(region == "All")) +
-  geom_bar(aes(x = year, y = mean_sst_anom, fill = color), stat = "identity") +
-  scale_fill_identity() +
-  geom_hline(yintercept = 0) +
-  theme(plot.title = element_markdown(size = 17, face = "bold", family = "Open Sans Semibold"),
-        plot.subtitle = element_markdown(size = 12)) +
-  labs(x = "Year", y = "SST anomaly (°C)") +
-  scale_x_continuous(limits = c(1984, 2026),
-                     breaks = seq(1985, 2025, 5),
-                     labels = seq(1985, 2025, 5)) +
-  theme_graph() +
-  lims(y = c(-1.5, 1.5))
-
-ggsave("figs/02_part-1/fig-10.png", height = 5.3, width = 7.2, dpi = fig_resolution)
-
-## 3.3 Regional ----
+## 3.2 Regional ----
 
 plot_ssta <- function(region_i){
   
@@ -80,6 +63,8 @@ map(setdiff(unique(data_sst_anom$region), "All"), ~plot_ssta(region_i = .))
 
 # 4. DHW percent ----
 
+## 4.1 Transform data ----
+
 load("data/02_misc/data_dhw_freq.RData")
 
 data_dhw_freq <- data_dhw_freq %>% 
@@ -106,28 +91,19 @@ data_dhw_freq <- data_dhw_freq %>%
          heatstress = factor(heatstress, levels = c("No stress/Watch", "Warning",
                                                     "Alert 1", "Alert 2", "Alert 3", "Alert 4", "Alert 5")))
 
-## 4.1 Global ----
+## 4.2 Global ----
 
-plot_i <- ggplot(data = data_dhw_freq %>% filter(region == "All")) +
-  geom_bar(aes(x = year, y = freq, fill = heatstress), stat = "identity") +
-  scale_fill_manual(values = c("No stress/Watch" = "lightgrey",
-                               "Warning" = palette_second[1],
-                               "Alert 1" = palette_second[2],
-                               "Alert 2" = palette_second[3],
-                               "Alert 3" = palette_second[4],
-                               "Alert 4" = palette_second[5],
-                               "Alert 5" = "black"),
-                    name = "Heat stress level") +
-  scale_x_continuous(limits = c(1984, 2026),
-                     breaks = seq(1985, 2025, 5),
-                     labels = seq(1985, 2025, 5)) +
-  theme_graph() +
-  theme(legend.title.position = "top", legend.title = element_text(hjust = 0.5)) +
-  labs(x = "Year", y = "Percentage of coral reefs")
+data_dhw_freq %>% 
+  filter(region == "All") %>%
+  select(-nb_cells, -total_nb_cells, -region, -subregion) %>%
+  mutate(freq = round(freq, 2)) %>%
+  pivot_wider(names_from = "heatstress", values_from = "freq") %>% 
+  select("year", "No stress/Watch", "Warning",
+         "Alert 1", "Alert 2", "Alert 3", "Alert 4", "Alert 5") %>% 
+  arrange(year) %>% 
+  openxlsx::write.xlsx(., "figs/07_additional/06_threats/data-heatstress_global.xlsx")
 
-ggsave("figs/02_part-1/fig-11.png", height = 5.3, width = 7.2, dpi = fig_resolution)
-
-## 4.2 Regional ----
+## 4.3 Regional ----
 
 plot_dhw <- function(region_i){
   
