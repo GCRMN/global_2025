@@ -4,6 +4,7 @@ library(tidyverse)
 library(ggtext)
 library(patchwork)
 library(tidybayes)
+library(HDInterval)
 
 # 2. Source functions ----
 
@@ -377,24 +378,21 @@ data_change <- readRDS("data/13_model-output_hbm/contrasts_global.rds") |>
   select(.draw, Year, value_diff, rel_diff) |> 
   group_by(Year) |>
   summarise_draws(median = median,
-                  lower = ~quantile(., 0.025),
-                  upper = ~quantile(., 0.975),
+                  ~HDInterval::hdi(.),
                   Pg = ~mean(.>0), 
                   Pl = ~mean(.<0)) |> 
-  rename(Lower = '2.5%',
-         Upper = '97.5%') |> 
   mutate(P = max(Pg, Pl),
          change_type = case_when(P == Pg & P >= 0.90 ~ "Increase",
                                  P != Pg & P >= 0.90 ~ "Decrease",
                                  P < 0.90 ~ "No change")) |>  
   filter(variable == "rel_diff" & Year >= 1985 & Year <= 2024) %>% 
-  mutate(across(c(median, Lower, Upper), ~.x*100),
+  mutate(across(c(median, lower, upper), ~.x*100),
          date = as.Date(paste0(Year, "-06-01")),
          change_type = factor(change_type, levels = c("Increase", "No change", "Decrease")))
 
 plot_d <- ggplot(data = data_change, aes(x = date)) +
   geom_hline(yintercept = 0, linewidth = 0.3) +
-  geom_crossbar(aes(y = median, ymin = Lower, ymax = Upper, fill = change_type, color = change_type),
+  geom_crossbar(aes(y = median, ymin = lower, ymax = upper, fill = change_type, color = change_type),
                 alpha = 0.5, width = 300) +
   scale_fill_manual(values = c("Increase" = "#2c82c9", "Decrease" = "#d64541", "No change" = "#f5f6fa"),
                     name = "Statistical\nchange\n") +

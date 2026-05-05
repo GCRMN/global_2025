@@ -9,6 +9,7 @@ library(scales)
 library(zoo)
 library(openxlsx)
 library(tidybayes)
+library(HDInterval)
 
 # 2. Source functions ----
 
@@ -36,19 +37,17 @@ data_contrasts <- readRDS("data/13_model-output_hbm/contrasts_global.rds") |>
   ungroup() |>
   group_by(Contrast) |>
   summarise_draws(median = median,
-                  lower = ~quantile(., 0.025),
-                  upper = ~quantile(., 0.975),
-                  Pg= ~mean(.>0), 
-                  Pl= ~mean(.<0)) |> 
+                  ~HDInterval::hdi(.),
+                  Pg = ~mean(.>0),
+                  Pl = ~mean(.<0)) |> 
   ungroup() |>
-  rename(Lower='2.5%',Upper='97.5%') |> 
   mutate(P = max(Pg, Pl),
          evidence = case_when(P >= 0.95 ~ "Strong evidence",
                               P >= 0.90 ~ "Evidence",
                               P >= 0.85 ~ "Weak evidence",
                               P < 0.85 ~ "No evidence")) |>  
   filter(variable == "rel") %>% 
-  mutate(across(c(median, Lower, Upper), ~round(.x*100, 1)))
+  mutate(across(c(median, lower, upper), ~round(.x*100, 1)))
 
 # 4. Figures for Part 1 ----
 
