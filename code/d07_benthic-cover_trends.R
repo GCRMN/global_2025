@@ -69,7 +69,7 @@ data_weights <- read.csv("figs/08_text-gen/reefs_extent.csv") %>%
 plot_donut_weights <- function(region_i){
   
   data_i <- data_weights %>% 
-    mutate(color = case_when(region == region_i ~ "red",
+    mutate(color = case_when(region == region_i ~ "#013C5E",
                              TRUE ~ "grey"))
   
   ggplot() +
@@ -93,22 +93,27 @@ data_models2 <- data_models %>%
   filter(category == "Hard coral" & level == "region") %>% 
   mutate(color = case_when(year <= 2009 ~ "red",
                            year > 2009 & year < 2020 ~ "grey",
-                           year >= 2020 ~ "blue"))
+                           year >= 2020 ~ "#013C5E"))
 
 plot_trends_periods <- function(region_i){
   
-  ggplot(data = data_models2 %>% filter(region == region_i),
-         aes(x = year, y = mean, color = color, group = 1)) +
-    geom_line(linewidth = 2) +
+  ggplot() +
+    geom_line(data = data_models2 %>% filter(region == region_i),
+              aes(x = year, y = mean), color = "grey", linewidth = 10) +
+    geom_line(data = data_models2 %>% filter(region == region_i & color == "red"),
+              aes(x = year, y = mean, color = color), linewidth = 10) +
+    geom_line(data = data_models2 %>% filter(region == region_i & color == "#013C5E"),
+              aes(x = year, y = mean, color = color), linewidth = 10) +
+    scale_x_continuous(limits = c(1980, 2025)) +
     scale_color_identity() +
-    theme_minimal() +
+    theme_void() +
     theme(axis.title = element_blank(),
           axis.ticks = element_blank(),
           axis.text = element_blank(),
           panel.grid = element_blank())
   
   ggsave(paste0("figs/02_part-1/fig_periods-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
-         height = 4, width = 6, bg = "transparent")
+         height = 4, width = 8, bg = "transparent")
   
 }
 
@@ -123,6 +128,10 @@ map(setdiff(unique(data_models$region), NA),
                  level_i = "region", range = "obs"))
 
 ## 5.2 Trends (subregions) ----
+
+data_models <- data_models %>% 
+  mutate(first_year = case_when(subregion == "ETP 5" ~ 2023,
+                                TRUE ~ first_year)) # Only one obs year for ETP 5, change first year to show the trend
 
 map(setdiff(unique(data_models$region), NA),
     ~plot_trends_model(region_i = .x,
