@@ -622,10 +622,28 @@ data_reefs <- read_sf("data/01_maps/02_clean/02_reefs-buffer/reefs_buffer_20.shp
 
 data_reefs <- st_intersection(data_reefs, data_subregions)
 
+lon_rect <- c(113.34, 114.31)
+lat_rect <- c(-29.13, -28.14)
+
+rect_houtman <- st_polygon(list(matrix(
+  c(
+    min(lon_rect), min(lat_rect),
+    max(lon_rect), min(lat_rect),
+    max(lon_rect), max(lat_rect),
+    min(lon_rect), max(lat_rect),
+    min(lon_rect), min(lat_rect)
+  ),
+  ncol = 2,
+  byrow = TRUE
+))) %>% 
+  st_sfc(crs = 4326) %>% 
+  st_sf(geometry = .)
+
 plot_i <- ggplot() +
   geom_sf(data = data_reefs, fill = "#ad5fad", color = "#ad5fad") +
-  geom_sf(data = data_subregions, color = "lightgrey", fill = NA, linewidth = 0.1) +
+  geom_sf(data = data_subregions, color = "darkgrey", fill = NA, linewidth = 0.25) +
   geom_sf(data = data_countries, color = "black", linewidth = 0.15) +
+  geom_sf(data = rect_houtman, fill = NA, color = "black", linewidth = 0.5) +
   theme(panel.border = element_rect(fill = NA, color = "black"),
         panel.background = element_rect(fill = "transparent"),
         panel.grid = element_blank(),
@@ -634,14 +652,9 @@ plot_i <- ggplot() +
         axis.text.y = element_text(angle = 90, hjust = 0.5),
         axis.text.y.right = element_text(angle = -90, hjust = 0.5)) + 
   coord_sf(xlim = c(91, 170), ylim = c(-37, -7),
-           label_axes = list(top = "E", left = "N", right = "N")) +
-  annotation_scale(location = "bl",
-                   width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                   text_cex = 0.7, style = "bar", line_width = 1, height = unit(0.04, "cm"),
-                   line_col = "black", pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
-                   bar_cols = c("black", "black"))
+           label_axes = list(top = "E", left = "N", right = "N"))
 
-ggsave("figs/04_case-studies/case-study_reef-maps_a.png",
+ggsave("figs/04_case-studies/case-study_reef-maps_b_raw.png",
        height = 4.2, width = 8.5, bg = "transparent", dpi = fig_resolution)
 
 ## 9.2 Barplot ----
@@ -666,18 +679,23 @@ ggplot(data = data_extent, aes(x = source, y = extent, fill = color)) +
   geom_text(aes(label = perc_extent), family = font_choose_graph, size = 4, vjust = -1, hjust = 0.5) +
   scale_fill_identity() +
   facet_wrap(~subregion, nrow = 1, strip.position = "bottom") +
-  scale_y_continuous(limits = c(0, 30000)) +
+  scale_y_continuous(limits = c(0, 30000),
+                     breaks = seq(0, 30000, by = 5000),
+                     labels = scales::label_comma(big.mark = ",")) +
   theme_graph() +
-  theme(panel.grid = element_blank(),
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
         panel.background = element_rect(fill = "transparent", color = NA),
         plot.background = element_rect(fill = "transparent", color = NA),
         strip.text = element_text(family = font_choose_graph),
         axis.line.x = element_blank(),
         axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()) +
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()) +
   labs(x = NULL, y = "Coral reef extent (km²)")
 
-ggsave("figs/04_case-studies/case-study_reef-maps_b.pdf",
+ggsave("figs/04_case-studies/case-study_reef-maps_c.pdf",
        height = 4, width = 11, bg = "transparent")
 
 # 10. Traditional stewardship of coral reefs ----
