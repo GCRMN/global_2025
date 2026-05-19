@@ -364,27 +364,27 @@ plot_c <- ggplot(data = data_dhw_freq) +
 
 ## 7.4 Plot for hard coral cover ----
 
-data_change <- readRDS("data/13_model-output_hbm/contrasts_global.rds") |> 
-  filter(category == "Hard coral") |>
-  pull(posteriors) |>
-  as.data.frame() |>
-  arrange(.draw, Year) |>
-  group_by(.draw) |>
+data_change <- readRDS("data/13_model-output_hbm/contrasts_global.rds") %>% 
+  filter(category == "Hard coral") %>%
+  pull(posteriors) %>%
+  as.data.frame() %>%
+  arrange(.draw, Year) %>%
+  group_by(.draw) %>%
   mutate(previous_year = lag(Year),
          value_diff = value - lag(value),
-         rel_diff = exp(log(value) - log(lag(value)))-1) |>
-  filter(!is.na(value_diff)) |>
-  ungroup() |>
-  select(.draw, Year, value_diff, rel_diff) |> 
-  group_by(Year) |>
+         rel_diff = exp(log(value) - log(lag(value)))-1) %>%
+  filter(!is.na(value_diff)) %>%
+  ungroup() %>%
+  select(.draw, Year, value_diff, rel_diff) %>% 
+  group_by(Year) %>%
   summarise_draws(median = median,
                   ~HDInterval::hdi(.),
                   Pg = ~mean(.>0), 
-                  Pl = ~mean(.<0)) |> 
+                  Pl = ~mean(.<0)) %>% 
   mutate(P = max(Pg, Pl),
          change_type = case_when(P == Pg & P >= 0.90 ~ "Increase",
                                  P != Pg & P >= 0.90 ~ "Decrease",
-                                 P < 0.90 ~ "No change")) |>  
+                                 P < 0.90 ~ "No change")) %>%  
   filter(variable == "rel_diff" & Year >= 1985 & Year <= 2024) %>% 
   mutate(across(c(median, lower, upper), ~.x*100),
          date = as.Date(paste0(Year, "-06-01")),

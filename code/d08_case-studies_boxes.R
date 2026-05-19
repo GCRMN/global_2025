@@ -646,23 +646,26 @@ ggsave("figs/04_case-studies/case-study_reef-maps_a.png",
 
 ## 9.2 Barplot ----
 
-data_extent <- tibble(region = paste0("Australia ", sort(rep(seq(1,7), times = 3))),
-                      source = rep(c("WRI", "ACA", "NESP"), 7),
-                      color = case_when(source == "WRI" ~ "#ad5fad",
-                                        source == "ACA" ~ "#7BA894",
-                                        source == "NESP" ~ "#6798C5"),
-                      label = case_when(region == "Australia 5" & source == "WRI" ~ "86%",
-                                        region == "Australia 5" & source == "ACA" ~ "56%",
-                                        region == "Australia 5" & source == "NESP" ~ "44%"),
-                      extent = c(500, 500, 500, 800, 1000, 5200, 800, 1000, 5200,
-                                 500, 5400, 5400, 25000, 20000, 28000,
-                                 800, 600, 10000, 200, 200, 400))
+data_extent <- read.csv("data/14_case-studies/emma_kennedy/ReefArea_by_GCRMNecoregion.csv") %>% 
+  rename(subregion = X) %>% 
+  pivot_longer(2:ncol(.), names_to = "source", values_to = "extent") %>% 
+  mutate(source = str_remove_all(source, "_AREA"),
+         color = case_when(source == "WRI" ~ "#ad5fad",
+                           source == "ACA" ~ "#7BA894",
+                           source == "NESP" ~ "#6798C5"),
+         source = factor(source, c("WRI", "ACA", "NESP"))) %>% 
+  group_by(source) %>% 
+  mutate(sum_extent = sum(extent),
+         perc_extent = round((extent*100)/sum_extent,0)) %>% 
+  ungroup() %>% 
+  mutate(perc_extent = case_when(subregion == "Australia 5" ~ paste0(perc_extent, "%"),
+                                 TRUE ~ ""))
 
 ggplot(data = data_extent, aes(x = source, y = extent, fill = color)) +
   geom_bar(stat = "identity", show.legend = FALSE, width = 0.8) +
-  geom_text(aes(label = label), family = font_choose_graph, size = 4, vjust = -1, hjust = 0.5) +
+  geom_text(aes(label = perc_extent), family = font_choose_graph, size = 4, vjust = -1, hjust = 0.5) +
   scale_fill_identity() +
-  facet_wrap(~region, nrow = 1, strip.position = "bottom") +
+  facet_wrap(~subregion, nrow = 1, strip.position = "bottom") +
   scale_y_continuous(limits = c(0, 30000)) +
   theme_graph() +
   theme(panel.grid = element_blank(),

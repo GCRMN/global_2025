@@ -22,30 +22,30 @@ source("code/function/transform_ribbons.R")
 
 load("data/model-results.RData")
 
-data_contrasts <- readRDS("data/13_model-output_hbm/contrasts_global.rds") |> 
-  filter(category == "Hard coral") |>
-  pull(posteriors) |>
-  as.data.frame() |> 
+data_contrasts <- readRDS("data/13_model-output_hbm/contrasts_global.rds") %>% 
+  filter(category == "Hard coral") %>%
+  pull(posteriors) %>%
+  as.data.frame() %>% 
   mutate(Contrast = case_when(Year %in% c(1997, 2000) ~ "1st GBE",
                               Year %in% c(2009, 2012) ~ "2nd GBE",
                               Year %in% c(2015, 2018) ~ "3rd GBE",
                               Year %in% c(2023, 2024) ~ "4th GBE",
                               TRUE ~ NA_character_)) %>% 
-  drop_na(Contrast) |> 
-  group_by(.draw, Contrast) |>
-  summarise(abs = diff(value), rel = exp(diff(log(value)))-1) |> 
-  ungroup() |>
-  group_by(Contrast) |>
+  drop_na(Contrast) %>% 
+  group_by(.draw, Contrast) %>%
+  summarise(abs = diff(value), rel = exp(diff(log(value)))-1) %>% 
+  ungroup() %>%
+  group_by(Contrast) %>%
   summarise_draws(median = median,
                   ~HDInterval::hdi(.),
                   Pg = ~mean(.>0),
-                  Pl = ~mean(.<0)) |> 
-  ungroup() |>
+                  Pl = ~mean(.<0)) %>% 
+  ungroup() %>%
   mutate(P = max(Pg, Pl),
          evidence = case_when(P >= 0.95 ~ "Strong evidence",
                               P >= 0.90 ~ "Evidence",
                               P >= 0.85 ~ "Weak evidence",
-                              P < 0.85 ~ "No evidence")) |>  
+                              P < 0.85 ~ "No evidence")) %>%  
   filter(variable == "rel") %>% 
   mutate(across(c(median, lower, upper), ~round(.x*100, 1)))
 
