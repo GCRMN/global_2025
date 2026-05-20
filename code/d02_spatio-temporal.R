@@ -129,6 +129,8 @@ data_benthic_sites <- data_benthic_sites %>%
 
 data_countries <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
+data_land <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_land/ne_10m_land.shp")
+
 data_subregions <- read_sf("data/01_maps/02_clean/04_subregions/gcrmn_subregions.shp") %>% 
   rename(subregion = subregn)
 

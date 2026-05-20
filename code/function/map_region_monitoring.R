@@ -2,8 +2,23 @@ map_region_monitoring <- function(region_i, color_scalebar = "white"){
   
   color_scalebar <- "black"
   
-  data_subregions_i <- data_subregions %>% 
-    filter(region == region_i)
+  if(region_i == "PERSGA"){ # Remove white polygons for PERSGA 1/2 inland
+    
+    data_subregions_i <- data_subregions %>% 
+      filter(region == "PERSGA")
+    
+    data_subregions_i <- data_subregions_i %>% 
+      filter(sbrgn_n == "Central Red Sea") %>% 
+      st_cast(., "POLYGON") %>% 
+      filter(row_number() == 1) %>% 
+      bind_rows(., data_subregions_i %>% filter(sbrgn_n != "Central Red Sea"))
+    
+  }else{
+    
+    data_subregions_i <- data_subregions %>% 
+      filter(region == region_i)
+    
+  }
   
   data_benthic_sites_i <- data_benthic_sites %>% 
     filter(region == region_i)
@@ -11,7 +26,8 @@ map_region_monitoring <- function(region_i, color_scalebar = "white"){
   plot_i <- ggplot() +
     #geom_sf(data = data_tropics, linetype = "dashed", linewidth = 0.25, color = "#483e37") +
     geom_sf(data = data_subregions_i, color = "#57add2", fill = NA, linewidth = 0.2) +
-    geom_sf(data = data_countries, fill = "#dadfe1", color = "black", linewidth = 0.15) +
+    #geom_sf(data = data_countries, fill = "#dadfe1", color = "black", linewidth = 0.15) + # Land borders
+    geom_sf(data = data_land, fill = "#dadfe1", color = "black", linewidth = 0.15) +
     geom_sf(data = data_benthic_sites_i %>% arrange(int_class),
             aes(color = int_class), show.legend = FALSE, size = 1.6) +
     scale_color_manual(values = palette_second,
@@ -184,6 +200,10 @@ map_region_monitoring <- function(region_i, color_scalebar = "white"){
       st_difference(correction_polygon) %>% 
       st_transform(crs_selected)
     
+    data_land_pacific <- data_land %>% 
+      st_difference(correction_polygon) %>% 
+      st_transform(crs_selected)
+    
     data_tropics_pacific <- data_tropics %>% 
       st_difference(correction_polygon) %>% 
       st_transform(crs_selected)
@@ -202,7 +222,8 @@ map_region_monitoring <- function(region_i, color_scalebar = "white"){
     plot_i <- ggplot() +
       #geom_sf(data = data_tropics_pacific, linetype = "dashed", linewidth = 0.25, color = "#483e37") +
       geom_sf(data = data_subregions_i, color = "#007caf", fill = NA, linewidth = 0.2) +
-      geom_sf(data = data_countries_pacific, fill = "#dadfe1", color = "black", linewidth = 0.15) +
+      #geom_sf(data = data_countries_pacific, fill = "#dadfe1", color = "black", linewidth = 0.15) + # Land borders
+      geom_sf(data = data_land_pacific, fill = "#dadfe1", color = "black", linewidth = 0.15) +
       geom_sf(data = data_benthic_sites_i %>% arrange(int_class),
               aes(color = int_class), show.legend = FALSE,
               size = 1.6) +
@@ -215,7 +236,7 @@ map_region_monitoring <- function(region_i, color_scalebar = "white"){
                label_axes = list(top = "E", left = "N", right = "N")) +
       scale_x_continuous(breaks = c(180, 160, 140, -160, -140, -120)) +
       theme(panel.border = element_rect(fill = NA, color = "black"),
-            panel.background = element_rect(fill = "white"),
+            panel.background = element_rect(fill = "transparent"),
             panel.grid = element_blank(),
             axis.text.y = element_text(angle = 90, hjust = 0.5),
             axis.text.y.right = element_text(angle = -90, hjust = 0.5),
