@@ -101,6 +101,10 @@ cyclone_intensity <- function(region_i){
   ggsave(filename = paste0("figs/03_part-2/fig-5/",
                            str_replace_all(str_replace_all(str_to_lower(region_i), " ", "-"), "---", "-"), ".png"),
          plot = plot_i, height = 3.5, width = 9, dpi = fig_resolution, bg = "transparent")
+
+  ggsave(filename = paste0("figs/03_part-2/fig-5/",
+                           str_replace_all(str_replace_all(str_to_lower(region_i), " ", "-"), "---", "-"), ".pdf"),
+         plot = plot_i, height = 3.5, width = 9, bg = "transparent")
   
 }
 
@@ -168,6 +172,10 @@ cyclone_frequency <- function(region_i){
   ggsave(filename = paste0("figs/03_part-2/fig-4/",
                            str_replace_all(str_replace_all(str_to_lower(region_i), " ", "-"), "---", "-"), ".png"),
          plot = plot_i, height = 3.5, width = 9, dpi = fig_resolution, bg = "transparent")
+  
+  ggsave(filename = paste0("figs/03_part-2/fig-4/",
+                           str_replace_all(str_replace_all(str_to_lower(region_i), " ", "-"), "---", "-"), ".pdf"),
+         plot = plot_i, height = 3.5, width = 9, bg = "transparent")
   
 }
 
