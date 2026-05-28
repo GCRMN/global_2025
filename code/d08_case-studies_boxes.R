@@ -664,7 +664,31 @@ ggsave("figs/04_case-studies/case-study_reef-maps_c.pdf",
 ## 9.1 Load and transform data ----
 
 data_dca <- read_sf("data/14_case-studies/Approved_DCA.shp") %>% 
-  st_transform(crs = 4326)
+  st_transform(crs = 4326) %>% 
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_make_valid() %>% 
+  st_cast("MULTIPOLYGON") %>% 
+  mutate(legend = "Dugong Conservation\nAreas")
+
+data_tagbanwa <- read_sf("data/14_case-studies/calauit_cadt_R04_BUS_0308_062.kml") %>% 
+  st_transform(crs = 4326) %>% 
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_make_valid() %>% 
+  st_cast("MULTIPOLYGON") %>% 
+  mutate(legend = "Tagbanwa Calawit\nAncestral Domain")
+
+data_wma <- read_sf("data/14_case-studies/calawit_wma.kml") %>% 
+  filter(row_number() == 3) %>% 
+  st_transform(crs = 4326) %>% 
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_make_valid() %>% 
+  st_cast("MULTIPOLYGON") %>%
+  mutate(legend = "Women Managed\nArea")
+
+data_areas <- bind_rows(data_dca, data_wma, data_tagbanwa) %>% 
+  mutate(legend = factor(legend, c("Tagbanwa Calawit\nAncestral Domain",
+                                   "Dugong Conservation\nAreas", "Women Managed\nArea")),
+         geometry = st_set_crs(geometry + c(5, 0), 4326))
 
 data_countries <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
@@ -674,10 +698,10 @@ data_calamianes <- read_sf("data/14_case-studies/calamianes_land_boundaries.shp"
 color_scalebar <- "black"
 
 data_bboxes <- tibble(plot = c("plot_a", "plot_b"),
-                      xmin = c(119.5, 119.86),
-                      xmax = c(120.7, 119.96),
-                      ymin = c(11.5, 12.26),
-                      ymax = c(12.6, 12.34))
+                      xmin = c(119.5, 119.75),
+                      xmax = c(120.7, 120.15),
+                      ymin = c(11.5, 12.23),
+                      ymax = c(12.6, 12.52))
 
 geom <- pmap(list(data_bboxes$xmin, data_bboxes$xmax, data_bboxes$ymin, data_bboxes$ymax),
              \(xmin, xmax, ymin, ymax) {
@@ -727,26 +751,46 @@ plot_b <- ggplot() +
 ## 9.4 Plot c ----
 
 plot_c <- ggplot() +
-  geom_sf(data = data_dca, color = "#013C5E", fill = "#013C5E", alpha = 0.3) +
+  # Generate the legend
+  geom_sf(data = data_areas, aes(color = legend, fill = legend), alpha = 0.5) +
+  scale_fill_manual(name = "Areas", values = c("Dugong Conservation\nAreas" = "#5c53a5",
+                                               "Tagbanwa Calawit\nAncestral Domain" = "#3288bd",
+                                               "Women Managed\nArea" = "#d53e4f")) +
+  scale_color_manual(name = "Areas", values = c("Dugong Conservation\nAreas" = "#5c53a5",
+                                                "Tagbanwa Calawit\nAncestral Domain" = "#3288bd",
+                                                "Women Managed\nArea" = "#d53e4f")) +
+  # Add the layers
+  geom_sf(data = data_tagbanwa, color = "#3288bd", fill = "#3288bd", alpha = 0.3) +
+  geom_sf(data = data_dca, color = "#5c53a5", fill = "#5c53a5", alpha = 0.5) +
+  geom_sf(data = data_wma, color = "#d53e4f", fill = "#d53e4f", alpha = 0.5) +
   geom_sf(data = data_calamianes) +
   annotation_scale(location = "tl",
                    width_hint = 0.25, text_family = font_choose_map, text_col = color_scalebar,
                    text_cex = 0.8, style = "bar", line_width = 1, height = unit(0.04, "cm"),
                    line_col = color_scalebar, pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
                    bar_cols = c(color_scalebar, color_scalebar)) +
-  coord_sf(xlim = c(119.84, 119.96), ylim = c(12.26, 12.36),
+  coord_sf(xlim = c(119.75, 120.15), ylim = c(12.23, 12.52),
            label_axes = list(bottom = "E", right = "N", top = "E")) +
-  scale_x_continuous(breaks = c(119.85, 119.90, 119.95)) +
-  scale_y_continuous(breaks = c(12.26, 12.31, 12.36)) +
+  scale_x_continuous(breaks = c(119.8, 119.9, 120.0, 120.1)) +
+  scale_y_continuous(breaks = c(12.5, 12.4, 12.3)) +
   theme_map() +
   theme(panel.background = element_rect(fill = "transparent"),
         plot.background = element_rect(fill = "transparent"),
         axis.text.x = element_text(hjust = 0.5, size = 10),
+        legend.position = c(0.82, 0.3),
+        legend.direction = "vertical",
+        legend.title = element_text(hjust = 0, size = 9, family = font_choose_graph),
+        legend.text = element_text(size = 7, family = font_choose_graph),
+        legend.spacing.y = unit(0.4, "cm"),
+        legend.background = element_rect(fill = "white", color = "black", linewidth = 0.3),
+        legend.key.height = unit(0.5, "cm"),
+        legend.key.width = unit(0.5, "cm"),
+        legend.key.spacing.y = unit(0.3, "cm"),
         axis.text.y.right = element_text(hjust = 0.5, size = 10, angle = -90))
 
 ## 9.5 Combine and export ----
 
-((plot_a / plot_b) | plot_c) + plot_layout(widths = c(1, 2.525)) & 
+((plot_a / plot_b) | plot_c) + plot_layout(widths = c(1, 2.92)) & 
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
         panel.background = element_rect(fill = "transparent", colour = NA))
 
