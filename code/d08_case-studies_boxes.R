@@ -390,48 +390,9 @@ plot_c <- ggplot(data = data_turf_sed, aes(x = TurfLength.mm., y = SedimentLoad.
 ggsave("figs/04_case-studies/case-study_turf_plot-c.png", width = 6, height = 5, dpi = 300)
 ggsave("figs/04_case-studies/case-study_turf_plot-c.pdf", width = 6, height = 5)
 
-# 7. Beyond hard coral case study ----
+# 7. WIO case study ----
 
-## 7.1 Temporal trends ----
-
-data <- tibble(plot = "a",
-               year = c(1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020),
-               mean_cover = c(32, 38, 42, 35, 34, 15, 12, 8, 18),
-               upper_cover = c(34, 40, 44, 37, 37, 18, 13, 10, 22),
-               lower_cover = c(30, 36, 40, 31, 32, 10, 11, 4, 17),
-               color = c(rep("black", 6), rep("grey", 3)))
-
-ggplot(data = data) +
-  geom_line(aes(x = year, y = mean_cover, color = color)) +
-  # Add the grey segment after the last black point
-  geom_segment(data = data %>% 
-                 arrange(year) %>%
-                 slice(6:7) %>%
-                 summarise(x = first(year),
-                           xend = last(year),
-                           y = first(mean_cover),
-                           yend = last(mean_cover)),
-               aes(x = x, xend = xend, y = y, yend = yend),
-               color = "grey") +
-  geom_linerange(aes(x = year, ymin = lower_cover, ymax = upper_cover, color = color),
-             show.legend = FALSE) +
-  geom_point(aes(x = year, y = mean_cover, fill = color),
-             shape = 21, color = "white", show.legend = FALSE, size = 3) +
-  scale_fill_identity() +
-  scale_color_identity() +
-  theme_graph() +
-  theme(plot.background = element_rect(fill = "transparent", colour = NA),
-        panel.background = element_rect(fill = "transparent", colour = NA)) +
-  lims(y = c(0, NA)) +
-  labs(x = "Year", y = "Hard coral cover (%)")
-
-ggsave("figs/04_case-studies/case-study_beyong-coral.pdf", width = 5, height = 4, bg = "transparent")
-
-## 7.2 Radar chart ----
-
-# 8. WIO case study ----
-
-## 8.1 Maps ----
+## 7.1 Maps ----
 
 color_scalebar <- "black"
 
@@ -582,7 +543,7 @@ plot_region + plot_kenya + plot_tanzania + plot_mada &
 
 ggsave("figs/04_case-studies/case-study_wio-a.png", width = 6.8, height = 7, dpi = 300, bg = "transparent")
 
-## 8.2 Heatmap ----
+## 7.2 Heatmap ----
 
 data_oecm <- readxl::read_xlsx("data/14_case-studies/wio_fig-2.xlsx") %>% 
   mutate(criteria = str_replace_all(criteria, "Criterion ", "C"),
@@ -608,9 +569,9 @@ ggplot(data = data_oecm, aes(x = criteria, y = site, fill = compliance)) +
 ggsave("figs/04_case-studies/case-study_wio-b.png", width = 4.5, height = 7.5, dpi = 300, bg = "transparent")
 ggsave("figs/04_case-studies/case-study_wio-b.pdf", width = 4.5, height = 7.5, bg = "transparent")
 
-# 9. Reef maps case study ----
+# 8. Reef maps case study ----
 
-## 9.1 Map ----
+## 8.1 Map ----
 
 data_countries <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
@@ -657,7 +618,7 @@ plot_i <- ggplot() +
 ggsave("figs/04_case-studies/case-study_reef-maps_b_raw.png",
        height = 4.2, width = 8.5, bg = "transparent", dpi = fig_resolution)
 
-## 9.2 Barplot ----
+## 8.2 Barplot ----
 
 data_extent <- read.csv("data/14_case-studies/emma_kennedy/ReefArea_by_GCRMNecoregion.csv") %>% 
   rename(subregion = X) %>% 
@@ -698,9 +659,9 @@ ggplot(data = data_extent, aes(x = source, y = extent, fill = color)) +
 ggsave("figs/04_case-studies/case-study_reef-maps_c.pdf",
        height = 4, width = 11, bg = "transparent")
 
-# 10. Traditional stewardship of coral reefs ----
+# 9 Traditional stewardship of coral reefs ----
 
-## 10.1 Load and transform data ----
+## 9.1 Load and transform data ----
 
 data_dca <- read_sf("data/14_case-studies/Approved_DCA.shp") %>% 
   st_transform(crs = 4326)
@@ -734,7 +695,7 @@ data_bboxes <- st_sf(data_bboxes, geometry = geom)
 
 rm(geom)
 
-## 10.2 Plot a ----
+## 9.2 Plot a ----
 
 plot_a <- ggplot() +
   geom_sf(data = data_countries) +
@@ -748,7 +709,7 @@ plot_a <- ggplot() +
         axis.text.x = element_text(hjust = 0.5, size = 10),
         axis.text.y = element_text(hjust = 0.5, size = 10, angle = 90))
 
-## 10.3 Plot b ----
+## 9.3 Plot b ----
 
 plot_b <- ggplot() +
   geom_sf(data = data_calamianes) +
@@ -763,7 +724,7 @@ plot_b <- ggplot() +
         axis.text.x = element_text(hjust = 0.5, size = 10),
         axis.text.y = element_text(hjust = 0.5, size = 10, angle = 90))
 
-## 10.4 Plot c ----
+## 9.4 Plot c ----
 
 plot_c <- ggplot() +
   geom_sf(data = data_dca, color = "#013C5E", fill = "#013C5E", alpha = 0.3) +
@@ -783,7 +744,7 @@ plot_c <- ggplot() +
         axis.text.x = element_text(hjust = 0.5, size = 10),
         axis.text.y.right = element_text(hjust = 0.5, size = 10, angle = -90))
 
-## 10.5 Combine and export ----
+## 9.5 Combine and export ----
 
 ((plot_a / plot_b) | plot_c) + plot_layout(widths = c(1, 2.525)) & 
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
@@ -791,3 +752,51 @@ plot_c <- ggplot() +
 
 ggsave("figs/04_case-studies/case-study_traditional.png",
        height = 5, width = 8, bg = "transparent", dpi = fig_resolution)
+
+# 10. Beyond coral cover ----
+
+## 10.1 Time series ----
+
+load("data/14_case-studies/beyond_coral/GCRMN_CaseStudy_HC_reefs.RData")
+
+plot_timeseries <- function(domain_name_value, event_year, arrow_colour) {
+  
+  GCRMN_CaseStudy_HC_reefs %>%
+    filter(domain_name == domain_name_value) %>%
+    mutate(cond.range = case_when(report_year > event_year ~ "After", .default = "Before"),
+           across(c("median", "lower", "upper"), ~.x*100)) %>%
+    ggplot() +
+      geom_line(aes(y = median, x = report_year), color = "grey", linewidth = 0.65,
+              show.legend = FALSE) +
+      geom_line(aes(y = median, x = report_year, color = cond.range), linewidth = 0.75,
+                show.legend = FALSE) +
+      geom_point(aes(y = median, x = report_year, fill = cond.range),
+                 size = 3, show.legend = FALSE, shape = 21, color = "white") +
+      geom_linerange(aes(x = report_year, ymin = lower, ymax = upper, color = cond.range),
+                     linewidth = 0.3, linetype = "dashed", show.legend = FALSE) +
+      annotate(geom = "segment", x = event_year, y = 25, xend = event_year, yend = 15,
+               linewidth = 1, colour = arrow_colour, lineend = "butt",
+               arrow = arrow(length = unit(0.2, "cm"), type = "closed", angle = 30)) +
+      scale_x_continuous(limits = c(1993, 2025), breaks = seq(1995, 2025, 5)) +
+      scale_y_continuous(limits = c(0, 85)) +
+      scale_color_manual(values = c("grey", "black")) +
+      scale_fill_manual(values = c("grey", "black")) +
+      labs(x = "Year", y = "Hard coral cover (%)") +
+      theme_graph()
+}
+
+plot_a <- plot_timeseries(domain_name_value = "SNAPPER ISLAND", event_year = 2018, arrow_colour = "#a059a0")
+
+plot_c <- plot_timeseries(domain_name_value = "LADY MUSGRAVE ISLAND", event_year = 2012, arrow_colour = "#3288bd")
+
+## 10.2 Plot radar chart ----
+
+source("code/function/script_case-study_mgr.R")
+
+## 10.3 Combine the plots ----
+
+plot_a + plot_b + plot_c + plot_d + plot_layout(nrow = 2, widths = c(1.5, 1)) + plot_annotation(tag_levels = "A") & 
+  theme(plot.background = element_rect(fill = "transparent", colour = NA),
+        panel.background = element_rect(fill = "transparent", colour = NA))
+
+ggsave("figs/04_case-studies/case-study_beyond-coral.pdf", height = 8, width = 12, bg = "transparent")
