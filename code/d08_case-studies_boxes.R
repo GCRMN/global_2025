@@ -723,7 +723,7 @@ rm(geom)
 
 plot_a <- ggplot() +
   geom_sf(data = data_countries) +
-  geom_sf(data = data_bboxes %>% filter(plot == "plot_a"), color = "#C44D56", fill = NA, linewidth = 0.6) +
+  geom_sf(data = data_bboxes %>% filter(plot == "plot_a"), color = "#013C5E", fill = NA, linewidth = 0.6) +
   coord_sf(xlim = c(114.9, 129.8), ylim = c(3.8, 20.2),
            label_axes = list(top = "E", left = "N")) +
   scale_x_continuous(breaks = c(116, 122, 127)) +
@@ -737,7 +737,7 @@ plot_a <- ggplot() +
 
 plot_b <- ggplot() +
   geom_sf(data = data_calamianes) +
-  geom_sf(data = data_bboxes %>% filter(plot == "plot_b"), color = "#C44D56", fill = NA, linewidth = 0.6) +
+  geom_sf(data = data_bboxes %>% filter(plot == "plot_b"), color = "#013C5E", fill = NA, linewidth = 0.6) +
   coord_sf(xlim = c(119.5, 120.7), ylim = c(11.5, 12.6),
            label_axes = list(bottom = "E", left = "N")) +
   scale_x_continuous(breaks = c(119.6, 120.1, 120.6)) +
