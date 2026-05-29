@@ -58,7 +58,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                          limits = c(1979, 2026),
                          labels = seq(1980, 2025, 5)) +
       #scale_y_continuous(limits = c(0, floor(max(data_i$upper_ci_95)/10)*10+10)) +
-      labs(x = "Year", y = paste0(category_i, " cover (%)"))
+      labs(x = "Year", y = paste0(ifelse(category_i == "Macroalgae", "Macroalgal", category_i), " cover (%)"))
     
     plot_i_ref <- ggplot(data = data_i %>% filter(category == category_i),
                      aes(x = year, fill = color, color = color)) +
@@ -80,7 +80,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                          limits = c(1979, 2026),
                          labels = seq(1980, 2025, 5)) +
       #scale_y_continuous(limits = c(0, floor(max(data_i$upper_ci_95)/10)*10+10)) +
-      labs(x = "Year", y = paste0(category_i, " cover (%)"))
+      labs(x = "Year", y = paste0(ifelse(category_i == "Macroalgae", "Macroalgal", category_i), " cover (%)"))
     
     data_labels_plot <- tibble(type = c("decline", "decline", "decline", "decline",
                                         "recovery", "recovery", "recovery"),
@@ -131,7 +131,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                          limits = c(1979, 2026),
                          labels = seq(1980, 2025, 5)) +
       #scale_y_continuous(limits = c(0, floor(max(data_i$upper_ci_95)/10)*10+10)) +
-      labs(x = "Year", y = paste0(category_i, " cover (%)"))
+      labs(x = "Year", y = paste0(ifelse(category_i == "Macroalgae", "Macroalgal", category_i), " cover (%)"))
     
     if(category_i == "Hard coral"){
       
@@ -308,8 +308,8 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                          labels = c("1980", "", "", "", "2000", "", "", "", "2020", "")) +
       scale_y_continuous(limits = c(0, floor(max(data_i$upper_ci_95)/10)*10+10)) +
       labs(x = "Year", y = case_when(category_i == "Hard coral" ~ "Hard coral cover (%)",
-                                     category_i == "Macroalgae" ~ "Macroalgae cover (%)",
-                                     category_i == "Turf algae" ~ "Turf algae cover (%)"))
+                                     category_i == "Macroalgae" ~ "Macroalgal cover (%)",
+                                     category_i == "Turf algae" ~ "Turf algal cover (%)"))
     
     fig_i <- case_when(category_i == "Hard coral" ~ "fig-7",
                        category_i == "Macroalgae" ~ "fig-8",
