@@ -663,21 +663,21 @@ ggsave("figs/04_case-studies/case-study_reef-maps_c.pdf",
 
 ## 9.1 Load and transform data ----
 
-data_dca <- read_sf("data/14_case-studies/Approved_DCA.shp") %>% 
+data_dca <- read_sf("data/14_case-studies/calawit/dca.kml") %>% 
   st_transform(crs = 4326) %>% 
   st_zm(drop = TRUE, what = "ZM") %>% 
   st_make_valid() %>% 
   st_cast("MULTIPOLYGON") %>% 
   mutate(legend = "Dugong Conservation\nAreas")
 
-data_tagbanwa <- read_sf("data/14_case-studies/calauit_cadt_R04_BUS_0308_062.kml") %>% 
+data_tagbanwa <- read_sf("data/14_case-studies/calawit/doc.kml") %>% 
   st_transform(crs = 4326) %>% 
   st_zm(drop = TRUE, what = "ZM") %>% 
   st_make_valid() %>% 
   st_cast("MULTIPOLYGON") %>% 
   mutate(legend = "Tagbanwa Calawit\nAncestral Domain")
 
-data_wma <- read_sf("data/14_case-studies/calawit_wma.kml") %>% 
+data_wma <- read_sf("data/14_case-studies/calawit/calawit_wma.kml") %>% 
   filter(row_number() == 3) %>% 
   st_transform(crs = 4326) %>% 
   st_zm(drop = TRUE, what = "ZM") %>% 
@@ -685,15 +685,23 @@ data_wma <- read_sf("data/14_case-studies/calawit_wma.kml") %>%
   st_cast("MULTIPOLYGON") %>%
   mutate(legend = "Women Managed\nArea")
 
-data_areas <- bind_rows(data_dca, data_wma, data_tagbanwa) %>% 
+data_adopt <- read_sf("data/14_case-studies/calawit/adopt a reef.kml") %>% 
+  st_transform(crs = 4326) %>% 
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_make_valid() %>% 
+  st_cast("MULTIPOLYGON") %>%
+  mutate(legend = "Adopt a Reef\nAreas")
+
+data_areas <- bind_rows(data_dca, data_wma, data_tagbanwa, data_adopt) %>% 
   mutate(legend = factor(legend, c("Tagbanwa Calawit\nAncestral Domain",
-                                   "Dugong Conservation\nAreas", "Women Managed\nArea")),
+                                   "Dugong Conservation\nAreas",
+                                   "Women Managed\nArea", "Adopt a Reef\nAreas")),
          geometry = st_set_crs(geometry + c(5, 0), 4326))
 
 data_countries <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
 # data_calamianes shp generated using the GEE script "code/misc/land_boundaries_calawit.js"
-data_calamianes <- read_sf("data/14_case-studies/calamianes_land_boundaries.shp")
+data_calamianes <- read_sf("data/14_case-studies/calawit/calamianes_land_boundaries.shp")
 
 color_scalebar <- "black"
 
@@ -755,14 +763,17 @@ plot_c <- ggplot() +
   geom_sf(data = data_areas, aes(color = legend, fill = legend), alpha = 0.5) +
   scale_fill_manual(name = "Areas", values = c("Dugong Conservation\nAreas" = "#5c53a5",
                                                "Tagbanwa Calawit\nAncestral Domain" = "#3288bd",
-                                               "Women Managed\nArea" = "#d53e4f")) +
+                                               "Women Managed\nArea" = "#d53e4f",
+                                               "Adopt a Reef\nAreas" = "#feca57")) +
   scale_color_manual(name = "Areas", values = c("Dugong Conservation\nAreas" = "#5c53a5",
                                                 "Tagbanwa Calawit\nAncestral Domain" = "#3288bd",
-                                                "Women Managed\nArea" = "#d53e4f")) +
+                                                "Women Managed\nArea" = "#d53e4f",
+                                                "Adopt a Reef\nAreas" = "#feca57")) +
   # Add the layers
   geom_sf(data = data_tagbanwa, color = "#3288bd", fill = "#3288bd", alpha = 0.3) +
   geom_sf(data = data_dca, color = "#5c53a5", fill = "#5c53a5", alpha = 0.5) +
   geom_sf(data = data_wma, color = "#d53e4f", fill = "#d53e4f", alpha = 0.5) +
+  geom_sf(data = data_adopt, color = "#feca57", fill = "#feca57", alpha = 0.5) +
   geom_sf(data = data_calamianes) +
   annotation_scale(location = "tl",
                    width_hint = 0.25, text_family = font_choose_map, text_col = color_scalebar,
