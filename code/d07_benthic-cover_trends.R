@@ -91,7 +91,8 @@ map(data_weights$region, ~plot_donut_weights(region_i = .x))
 
 data_models2 <- data_models %>% 
   filter(category == "Hard coral" & level == "region") %>% 
-  mutate(color = case_when(year <= 2009 ~ "red",
+  filter(year >= first_year & year <= last_year) %>% 
+  mutate(color = case_when(year <= 2009 ~ "#C44D56",
                            year > 2009 & year < 2020 ~ "grey",
                            year >= 2020 ~ "#013C5E"))
 
@@ -100,7 +101,7 @@ plot_trends_periods <- function(region_i){
   ggplot() +
     geom_line(data = data_models2 %>% filter(region == region_i),
               aes(x = year, y = mean), color = "grey", linewidth = 10) +
-    geom_line(data = data_models2 %>% filter(region == region_i & color == "red"),
+    geom_line(data = data_models2 %>% filter(region == region_i & color == "#C44D56"),
               aes(x = year, y = mean, color = color), linewidth = 10) +
     geom_line(data = data_models2 %>% filter(region == region_i & color == "#013C5E"),
               aes(x = year, y = mean, color = color), linewidth = 10) +
@@ -113,7 +114,7 @@ plot_trends_periods <- function(region_i){
           panel.grid = element_blank())
   
   ggsave(paste0("figs/02_part-1/fig_periods-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
-         height = 4, width = 8, bg = "transparent")
+         height = 3.5, width = 10, bg = "transparent")
   
 }
 
