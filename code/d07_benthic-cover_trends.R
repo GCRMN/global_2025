@@ -90,11 +90,12 @@ map(data_weights$region, ~plot_donut_weights(region_i = .x))
 ### 4.2.2 Trends ----
 
 data_models2 <- data_models %>% 
-  filter(category == "Hard coral" & level == "region") %>% 
+  filter(category == "Hard coral" & level %in% c("global", "region")) %>% 
   filter(year >= first_year & year <= last_year) %>% 
   mutate(color = case_when(year <= 2009 ~ "#C44D56",
                            year > 2009 & year < 2020 ~ "grey",
-                           year >= 2020 ~ "#013C5E"))
+                           year >= 2020 ~ "#013C5E"),
+         region = ifelse(is.na(region), "global", region))
 
 plot_trends_periods <- function(region_i){
   
@@ -118,7 +119,7 @@ plot_trends_periods <- function(region_i){
   
 }
 
-map(data_weights$region, ~plot_trends_periods(region_i = .x))
+map(c(data_weights$region, "global"), ~plot_trends_periods(region_i = .x))
 
 # 5. Figures for Part 2 ----
 
