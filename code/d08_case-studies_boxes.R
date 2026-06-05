@@ -2,11 +2,14 @@
 
 library(tidyverse)
 library(sf)
+library(s2)
 sf_use_s2(FALSE)
 library(ggspatial) # For annotation_scale function
 library(patchwork)
 library(ggtext)
 library(ggsflabel)
+library(maptiles)
+library(tidyterra)
 
 # 2. Source functions ----
 
@@ -855,3 +858,240 @@ plot_a + plot_b + plot_c + plot_d + plot_layout(nrow = 2, widths = c(1.5, 1)) + 
         panel.background = element_rect(fill = "transparent", colour = NA))
 
 ggsave("figs/04_case-studies/case-study_beyond-coral.pdf", height = 8, width = 12, bg = "transparent")
+
+# 11. The 4th Global Bleaching Event ----
+
+## 11.1 Figure 1 ----
+
+# Ajouter les légendes
+# Ajouter les annotations (mean et strong el nino, les GBE et les Température ONI au dessus)
+# Passer l'axe y ONI de l'autre côté
+
+data_f1 <- read.csv("data/14_case-studies/4gbe/Fig1_data.csv") %>% 
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y"),
+         ONI = case_when(ONI_value >= 0.5 ~ "El Niño",
+                         ONI_value <= -0.5 ~ "La Niña",
+                         TRUE ~ "Neutral")) %>% 
+  # Define the periods based on Table 1 of Spady et al. (2026)
+  mutate(event = case_when(Date < as.Date("1997-09-24") ~ "NGBE1",
+                           Date >= as.Date("1997-09-24") & Date <= as.Date("1999-02-25") ~ "GBE1",
+                           Date > as.Date("1999-02-25") & Date < as.Date("2009-06-23")~ "NGBE2",
+                           Date >= as.Date("2009-06-23") & Date <= as.Date("2011-09-04") ~ "GBE2",
+                           Date > as.Date("2011-09-04") & Date < as.Date("2014-08-28") ~ "NGBE3",
+                           Date >= as.Date("2014-08-28") & Date <= as.Date("2017-12-15") ~ "GBE3",
+                           Date > as.Date("2017-12-15") & Date < as.Date("2018-08-13") ~ "NGBE4",
+                           Date >= as.Date("2018-08-13") & Date <= as.Date("2025-12-17") ~ "GBE4"),
+         type = case_when(str_sub(event, 1, 1) == "G" ~ "GBE",
+                          TRUE ~ "NGBE"))
+
+data_f1_mean <- data_f1 %>% 
+  filter(Date >= as.Date("2019-01-01") & Date <= as.Date("2023-12-31")) %>% 
+  summarise(Mean_SST = mean(Mean_SST))
+
+plot_a <- ggplot(data = data_f1, aes(x = Date, y = Mean_SST, color = type, group = 1)) +
+  geom_line(show.legend = FALSE) +
+  scale_color_manual(breaks = c("GBE", "NGBE"),
+                     values = c("#d64541", "grey")) +
+  geom_hline(yintercept = data_f1_mean$Mean_SST, linetype = "dashed") +
+  labs(x = "Year", y = "Sea surface\ntemperature (°C)") +
+  lims(y = c(22, 24)) +
+  theme_graph() +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.line.x = element_blank(),
+        axis.ticks.x = element_blank())
+
+data_plot <- data_f1 %>%
+  drop_na(ONI_value) %>%
+  arrange(Date) %>%
+  mutate(Date_next = lead(Date),
+         ONI_next = lead(ONI_value),
+         segment_color = case_when(
+           ONI_value >= 0.5 & ONI_next >= 0.5 ~ "El Niño",
+           ONI_value <= -0.5 & ONI_next <= -0.5 ~ "La Niña",
+           TRUE ~ "Neutral"),
+         segment_color = factor(segment_color, c("El Niño", "Neutral", "La Niña"))) %>%
+  drop_na(Date_next, ONI_next)
+
+plot_b <- ggplot(data = data_plot) +
+  geom_segment(aes(x = Date, xend = Date_next, y = ONI_value,
+                   yend = ONI_next, color = segment_color), linewidth = 0.6) +
+  scale_color_manual(values = c("El Niño" = "#d64541",
+                                "Neutral" = "grey",
+                                "La Niña" = "#3288bd"),
+                     name = NULL) +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 1.5, linetype = "dashed", color = "#d64541") +
+  labs(x = "Year", y = "Oceanic Niño\nIndex (°C)") +
+  scale_y_continuous(limits = c(-3, 3), breaks = c(-3, -2, -1, 0, 1, 2, 3), position = "right") +
+  theme_graph() +
+  theme(   legend.position = c(0.02, 0.02),
+           legend.justification = c(0, 0),
+           legend.direction = "horizontal",
+           legend.background = element_rect(
+             fill = NA,
+             colour = NA
+           ))
+
+
+
+
+
+
+
+
+plot_a + plot_b + plot_layout(ncol = 1)
+
+ggsave("figs/04_case-studies/case-study_4gbe_1.pdf", height = 8, width = 11, bg = "transparent")
+
+## 11.2 Figure 2 ----
+
+# grid vertical tous les ans
+# year every 5 ans en ticks x
+
+data_f2 <- read.csv("data/14_case-studies/4gbe/Fig2_data.csv") %>% 
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>% 
+  # Define the periods based on Table 1 of Spady et al. (2026)
+  mutate(event = case_when(Date < as.Date("1997-09-24") ~ "NGBE1",
+                           Date >= as.Date("1997-09-24") & Date <= as.Date("1999-02-25") ~ "GBE1",
+                           Date > as.Date("1999-02-25") & Date < as.Date("2009-06-23")~ "NGBE2",
+                           Date >= as.Date("2009-06-23") & Date <= as.Date("2011-09-04") ~ "GBE2",
+                           Date > as.Date("2011-09-04") & Date < as.Date("2014-08-28") ~ "NGBE3",
+                           Date >= as.Date("2014-08-28") & Date <= as.Date("2017-12-15") ~ "GBE3",
+                           Date > as.Date("2017-12-15") & Date < as.Date("2018-08-13") ~ "NGBE4",
+                           Date >= as.Date("2018-08-13") & Date <= as.Date("2025-12-17") ~ "GBE4"))
+
+ggplot(data = data_f2) +
+  geom_ribbon(data = data_f2 %>% filter(str_sub(event, 1, 1) == "G"),
+              aes(x = Date, ymin = 0, ymax = Alert_1, group = event,
+                  fill = "Global stress periods"), alpha = 0.75) +
+  geom_ribbon(data = data_f2 %>% filter(str_sub(event, 1, 1) == "N"),
+                  aes(x = Date, ymin = 0, ymax = Alert_1, group = event,
+                      fill = "Non-Global stress periods"), alpha = 0.75) +
+  geom_line(aes(x = Date, y = Alert_1, linetype = "DHW ≥ 4"), linewidth = 0.6) +
+  geom_line(aes(x = Date, y = Alert_2, linetype = "DHW ≥ 8"), linewidth = 0.6) +
+  scale_fill_manual(name = NULL,
+                    values = c("Non-Global stress periods" = "#3288bd",
+                               "Global stress periods" = "#d64541")) +
+  scale_linetype_manual(name = NULL,
+                        values = c("DHW ≥ 4" = "solid",
+                                   "DHW ≥ 8" = "dashed")) +
+  scale_x_date(date_breaks = "5 years",
+               date_minor_breaks = "1 year",
+               date_labels = "%Y",
+               limits = c(as.Date("1985-01-01"), as.Date("2026-12-31")),
+               expand = FALSE) +
+  labs(x = "Year",
+       y = "Annual Bleaching Stress\nExtent (percent reefs)") +
+  theme_graph() +
+  theme(panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.background = element_rect(fill = "transparent", colour = NA),
+        legend.position = c(0.02, 0.98),
+        legend.justification = c(0, 1),
+        legend.direction = "vertical",
+        legend.box = "vertical",
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.spacing.y = unit(0.1, "cm"),
+        legend.key.height = unit(0.5, "cm"),
+        legend.key.width = unit(0.5, "cm")) +
+  guides(linetype = guide_legend(order = 1,
+                                 ncol = 1,
+                                 override.aes = list(fill = NA)),
+         fill = guide_legend(order = 2, ncol = 1))
+
+ggsave("figs/04_case-studies/case-study_4gbe_2.pdf", height = 4, width = 11, bg = "transparent")
+
+# 12. MSC case study ----
+
+## 12.1 Sphere map ----
+
+data_land <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_land/ne_10m_land.shp") %>% 
+  st_transform(crs = 4326)
+
+data_graticules <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_graticules_15/ne_10m_graticules_15.shp") %>% 
+  st_transform(crs = 4326)
+
+longitude <- -70
+
+g <- as_s2_geography(TRUE)
+co <- data_land
+oc <- s2_difference(g, s2_union_agg(co)) # oceans
+b <- s2_buffer_cells(as_s2_geography(paste0("POINT(", longitude," 0)")), 9800000) # visible half
+i <- s2_intersection(b, oc) # visible ocean
+
+i <- i %>% 
+  st_as_sfc() %>% 
+  st_transform(., paste0("+proj=ortho +lat_0=0 +lon_0=", longitude))
+
+b <- b %>% 
+  st_as_sfc() %>% 
+  st_transform(., paste0("+proj=ortho +lat_0=0 +lon_0=", longitude))
+
+site_cays <- tibble(latitude = 25.51, longitude = -79.27) %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
+  st_as_sfc() %>% 
+  st_transform(., paste0("+proj=ortho +lat_0=0 +lon_0=", longitude))
+
+data_graticules <- st_intersection(data_graticules,
+                                   i %>% st_transform(crs = 4326) %>% st_make_valid()) %>% 
+  st_transform(., paste0("+proj=ortho +lat_0=0 +lon_0=", longitude))
+
+plot_i <- ggplot() +
+  geom_sf(data = b, fill = "#cfb7a5", col = "black", linewidth = 0.3) +
+  geom_sf(data = i, fill = "#bfdbee") +
+  geom_sf(data = data_graticules, color = "white") +
+  geom_sf(data = site_cays, color = "white", fill = "#c44d56", shape = 21, size = 12) +
+  geom_sf(data = b, fill = NA, col = "white", linewidth = 0.4) +
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        plot.background = element_rect(fill = "transparent", color = NA),
+        panel.background = element_rect(fill = "transparent", color = NA))
+
+ggsave("figs/04_case-studies/case-study_msc_map-sphere.png", height = 6, width = 6, bg = "transparent")
+
+## 12.2 Main map ----
+
+data_sites <- tibble(site = c("Lobo Horris", "Bull Run Reef", "Victory Reef", "Tuna Alley", "Welcome to the Jungle"),
+                     latitude = c(25.4004, 25.4534, 25.4857, 25.5248, 25.3892),
+                     longitude = c(-79.2256, -79.2478, -79.2735, -79.2992, -79.226)) %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+xlim <- c(-79.35, -79.18)
+
+ylim <- c(25.35, 25.61)
+
+bbox <- st_bbox(c(xmin = xlim[1], xmax = xlim[2],
+                  ymin = ylim[1], ymax = ylim[2]),
+                crs = 4326)
+
+sat <- get_tiles(x = st_as_sfc(bbox), provider = "Esri.WorldImagery",
+                 zoom = 13, crop = TRUE)
+
+color_scalebar <- "white"
+
+ggplot() +
+  geom_spatraster_rgb(data = sat) +
+  geom_sf(data = data_sites, shape = 21, color = "white", fill = "#d64541", size = 3) +
+  geom_sf_label(data = data_sites %>% filter(site %in% c("Victory Reef", "Tuna Alley")),
+                aes(label = site), size = 4, nudge_x = 0.005, hjust = 0,
+                family = font_choose_graph, fill = "#d64541", alpha = 0.8, color = "white") +
+  geom_sf_label(data = data_sites %>% filter(site %in% c("Welcome to the Jungle", "Lobo Horris",
+                                                         "Bull Run Reef")),
+                aes(label = site), size = 4, nudge_x = -0.005, hjust = 1,
+                family = font_choose_graph, fill = "#d64541", alpha = 0.8, color = "white") +
+  coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +
+  annotation_scale(location = "br",
+                   width_hint = 0.25, text_family = font_choose_map, text_col = color_scalebar,
+                   text_cex = 0.8, style = "bar", line_width = 1, height = unit(0.04, "cm"),
+                   line_col = color_scalebar, pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
+                   bar_cols = c(color_scalebar, color_scalebar)) +
+  theme_map() +
+  theme(panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.background = element_rect(fill = "transparent", colour = NA)) +
+  scale_x_continuous(breaks = c(-79.3, -79.2)) +
+  scale_y_continuous(breaks = c(25.4, 25.5, 25.6)) +
+  theme(axis.text.y = element_text(hjust = 0.5))
+
+ggsave("figs/04_case-studies/case-study_msc_map.png", height = 6.9, width = 4.2, bg = "transparent")
