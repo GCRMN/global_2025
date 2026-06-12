@@ -384,7 +384,7 @@ scores <- indices %>%
   mutate(
     fYEAR = Year,
     Reference=case_when(
-      (Reference=="Combined") & 
+      (Reference=="Baseline") & 
         (Indicator %in% c("Community.composition")) ~ "Combined_adjusted",
       .default=Reference),
     Year = as.numeric(as.character(Year)),
