@@ -1,0 +1,120 @@
+# 1. Load packages ----
+
+library(tidyverse)
+library(glue)
+library(readxl)
+
+# 2. Load data ----
+
+data_authors <- read_xlsx("data/authors_affiliations.xlsx")
+
+# 3. Generate LaTeX code for list of authors ----
+
+## 3.1 Create the function ----
+
+export_authors_latex <- function(region_i) {
+  
+  data_authors_region <- data_authors %>% 
+    filter(region == region_i)
+  
+  # List of affiliations
+  data_list_affiliations <- data_authors_region %>%
+    distinct(affiliation) %>%
+    mutate(affil_id = row_number())
+  
+  # List of authors
+  data_list_authors <- data_authors_region %>%
+    left_join(data_list_affiliations, by = "affiliation") %>%
+    arrange(position) %>%
+    group_by(position, first_name, last_name, email, orcid, include_email) %>%
+    summarise(
+      affil_id = paste(sort(unique(affil_id)), collapse = ","),
+      .groups = "drop"
+    ) %>%
+    arrange(position)
+  
+  latex_authors <- data_list_authors %>%
+    mutate(
+      email_tex = case_when(
+        include_email == TRUE & !is.na(email) & email != "" ~
+          glue("\\emailicon{{{email}}}"),
+        TRUE ~ ""
+      ),
+      
+      orcid_tex = case_when(
+        !is.na(orcid) & orcid != "" ~
+          glue("\\orcidicon{{{orcid}}}"),
+        TRUE ~ ""
+      ),
+      
+      latex = glue(
+        "{first_name} \\textbf{{{last_name}}}\\textsuperscript{{{affil_id}}}{email_tex}{orcid_tex}"
+      )
+    )
+  
+  latex_output <- paste0(
+    latex_authors$latex,
+    if_else(
+      seq_len(nrow(latex_authors)) == nrow(latex_authors),
+      "",
+      ",\n"
+    ),
+    collapse = ""
+  )
+  
+  writeLines(
+    latex_output,
+    paste0(
+      "figs/09_affiliations/authors_",
+      str_replace_all(str_to_lower(region_i), " ", "-"),
+      ".tex"
+    )
+  )
+}
+
+## 3.2 Map over the regions ----
+
+walk(unique(data_authors$region),
+     ~export_authors_latex(region_i = .x))
+
+# 4. Generate LaTeX code for list of affiliations ----
+
+## 4.1 Create the function ----
+
+export_affiliations_latex <- function(region_i) {
+  
+  data_authors_region <- data_authors %>% 
+    filter(region == region_i)
+  
+  data_list_affiliations <- data_authors_region %>%
+    mutate(affiliation = paste0(affiliation, ", ", country)) %>% 
+    distinct(affiliation) %>%
+    mutate(affil_id = row_number())
+  
+  latex_affiliations <- data_list_affiliations %>%
+    mutate(
+      latex = glue(
+        "\\textbf{{\\textsuperscript{{{affil_id}}}}}{affiliation}"
+      )
+    )
+  
+  latex_output <- paste0(
+    latex_affiliations$latex,
+    if_else(
+      seq_len(nrow(latex_affiliations)) == nrow(latex_affiliations),
+      "",
+      " $\\mid$ \n"
+    ),
+    collapse = ""
+  )
+  
+  writeLines(latex_output, paste0("figs/09_affiliations/affiliations_",
+                                  str_replace_all(str_to_lower(region_i), " ", "-"),
+                                  ".tex"))
+  
+}
+
+## 4.2 Map over the regions ----
+
+walk(unique(data_authors$region),
+     ~export_affiliations_latex(region_i = .x))
