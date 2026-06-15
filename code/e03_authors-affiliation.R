@@ -6,7 +6,9 @@ library(readxl)
 
 # 2. Load data ----
 
-data_authors <- read_xlsx("data/authors_affiliations.xlsx")
+data_authors <- read_xlsx("data/authors_affiliations.xlsx") %>% 
+  mutate(across(c("first_name", "last_name", "affiliation", "country"), ~replace_na(.x, "")),
+         across(c("region", "first_name", "last_name", "affiliation", "country", "email", "orcid"), ~str_squish(.x)))
 
 # 3. Generate LaTeX code for list of authors ----
 
