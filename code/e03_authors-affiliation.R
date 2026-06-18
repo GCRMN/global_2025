@@ -120,3 +120,30 @@ export_affiliations_latex <- function(region_i) {
 
 walk(unique(data_authors$region),
      ~export_affiliations_latex(region_i = .x))
+
+# 5. Citations of regional chapters ----
+
+data_authors <- left_join(data_authors, read_xlsx("data/chapters_doi.xlsx"))
+
+export_citation_latex <- function(region_i){
+  
+  latex_output <- data_authors %>%
+    filter(region == region_i) %>% 
+    select(position, first_name, last_name, region_nb, region_name, chapter_doi) %>% 
+    distinct() %>% 
+    arrange(position) %>% 
+    mutate(author = paste0(last_name, ", ", substr(first_name, 1, 1), "."),
+           citation = paste(author, collapse = ", "),
+           citation = glue("{citation} (2026). Chapter {region_nb} -- Status and Trends of Coral Reefs in {region_name}. \\textit{{In Gonzalez-Rivero, M., Dallison, T., Wicquart, J.  Status and Trends of Coral Reefs of the World: 2025. Global Coral Reef Monitoring Network (GCRMN) and International Coral Reef Initiative (ICRI).}} {chapter_doi}")) %>%
+    select(citation) %>% 
+    distinct(citation) %>% 
+    pull(citation)
+  
+  writeLines(latex_output, paste0("figs/09_affiliations/citation_",
+                                  str_replace_all(str_to_lower(region_i), " ", "-"),
+                                  ".tex"))
+  
+}
+
+walk(unique(data_authors$region),
+     ~export_citation_latex(region_i = .x))
