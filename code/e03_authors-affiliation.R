@@ -8,7 +8,8 @@ library(readxl)
 
 data_authors <- read_xlsx("data/authors_affiliations.xlsx") %>% 
   mutate(across(c("first_name", "last_name", "affiliation", "country"), ~replace_na(.x, "")),
-         across(c("region", "first_name", "last_name", "affiliation", "country", "email", "orcid"), ~str_squish(.x)))
+         across(c("part", "subpart", "first_name", "last_name", "affiliation", "country", "email", "orcid"), ~str_squish(.x))) %>% 
+  filter(part == "Part 2 - Regional synthesis")
 
 # 3. Generate LaTeX code for list of authors ----
 
@@ -17,7 +18,7 @@ data_authors <- read_xlsx("data/authors_affiliations.xlsx") %>%
 export_authors_latex <- function(region_i) {
   
   data_authors_region <- data_authors %>% 
-    filter(region == region_i)
+    filter(subpart == region_i)
   
   # List of affiliations
   data_list_affiliations <- data_authors_region %>%
@@ -76,7 +77,7 @@ export_authors_latex <- function(region_i) {
 
 ## 3.2 Map over the regions ----
 
-walk(unique(data_authors$region),
+walk(unique(data_authors$subpart),
      ~export_authors_latex(region_i = .x))
 
 # 4. Generate LaTeX code for list of affiliations ----
@@ -86,7 +87,7 @@ walk(unique(data_authors$region),
 export_affiliations_latex <- function(region_i) {
   
   data_authors_region <- data_authors %>% 
-    filter(region == region_i)
+    filter(subpart == region_i)
   
   data_list_affiliations <- data_authors_region %>%
     mutate(affiliation = paste0(affiliation, ", ", country)) %>% 
@@ -118,17 +119,17 @@ export_affiliations_latex <- function(region_i) {
 
 ## 4.2 Map over the regions ----
 
-walk(unique(data_authors$region),
+walk(unique(data_authors$subpart),
      ~export_affiliations_latex(region_i = .x))
 
 # 5. Citations of regional chapters ----
 
-data_authors <- left_join(data_authors, read_xlsx("data/chapters_doi.xlsx"))
+data_authors <- left_join(data_authors, read_xlsx("data/chapters_doi.xlsx") %>% rename(subpart = region))
 
 export_citation_latex <- function(region_i){
   
   latex_output <- data_authors %>%
-    filter(region == region_i) %>% 
+    filter(subpart == region_i) %>% 
     select(position, first_name, last_name, region_nb, region_name, chapter_doi) %>% 
     distinct() %>% 
     arrange(position) %>% 
@@ -145,5 +146,5 @@ export_citation_latex <- function(region_i){
   
 }
 
-walk(unique(data_authors$region),
+walk(unique(data_authors$subpart),
      ~export_citation_latex(region_i = .x))
