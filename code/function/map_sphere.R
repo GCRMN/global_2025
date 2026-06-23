@@ -45,7 +45,7 @@ map_sphere <- function(region_i){
           plot.background = element_rect(fill = "transparent", color = NA),
           panel.background = element_rect(fill = "transparent", color = NA))
   
-  ggsave(paste0("figs/03_part-2/fig-1/",
+  ggsave(paste0("figs/03_part-2/fig-0/",
                 str_replace_all(str_to_lower(region_i), " ", "-"), "_sphere.png"),
          bg = "transparent")
   

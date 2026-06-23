@@ -132,10 +132,13 @@ export_citation_latex <- function(region_i){
     filter(subpart == region_i) %>% 
     select(position, first_name, last_name, region_nb, region_name, chapter_doi) %>% 
     distinct() %>% 
+    filter(position <= 5) %>% 
     arrange(position) %>% 
     mutate(author = paste0(last_name, ", ", substr(first_name, 1, 1), "."),
+           region_name = case_when(region_name %in% c("Australia", "Brazil") ~ region_name,
+                                   TRUE ~ paste0("the ", region_name)),
            citation = paste(author, collapse = ", "),
-           citation = glue("{citation} (2026). Chapter {region_nb} -- Status and Trends of Coral Reefs in {region_name}. \\textit{{In Gonzalez-Rivero, M., Dallison, T., Wicquart, J.  Status and Trends of Coral Reefs of the World: 2025. Global Coral Reef Monitoring Network (GCRMN) and International Coral Reef Initiative (ICRI).}} {chapter_doi}")) %>%
+           citation = glue("{citation}, \\textit{{et al.}} (2026). Chapter {region_nb} -- Status and Trends of Coral Reefs in {region_name}. \\textit{{In González-Rivero, M., \\textit{{et al.}} Status and Trends of Coral Reefs of the World: 2025. Global Coral Reef Monitoring Network.}} {chapter_doi}")) %>%
     select(citation) %>% 
     distinct(citation) %>% 
     pull(citation)
