@@ -791,12 +791,12 @@ plot_c <- ggplot() +
   theme(panel.background = element_rect(fill = "transparent"),
         plot.background = element_rect(fill = "transparent"),
         axis.text.x = element_text(hjust = 0.5, size = 10),
-        legend.position = c(0.82, 0.3),
+        legend.position = c(0.86, 0.37),
         legend.direction = "vertical",
         legend.title = element_text(hjust = 0, size = 9, family = font_choose_graph),
         legend.text = element_text(size = 7, family = font_choose_graph),
         legend.spacing.y = unit(0.4, "cm"),
-        legend.background = element_rect(fill = "white", color = "black", linewidth = 0.3),
+        legend.background = element_rect(fill = "transparent", color = NA, linewidth = 0),
         legend.key.height = unit(0.5, "cm"),
         legend.key.width = unit(0.5, "cm"),
         legend.key.spacing.y = unit(0.3, "cm"),
@@ -863,10 +863,6 @@ ggsave("figs/04_case-studies/case-study_beyond-coral.pdf", height = 8, width = 1
 
 ## 11.1 Figure 1 ----
 
-# Ajouter les légendes
-# Ajouter les annotations (mean et strong el nino, les GBE et les Température ONI au dessus)
-# Passer l'axe y ONI de l'autre côté
-
 data_f1 <- read.csv("data/14_case-studies/4gbe/Fig1_data.csv") %>% 
   mutate(Date = as.Date(Date, format = "%d/%m/%Y"),
          ONI = case_when(ONI_value >= 0.5 ~ "El Niño",
@@ -888,18 +884,32 @@ data_f1_mean <- data_f1 %>%
   filter(Date >= as.Date("2019-01-01") & Date <= as.Date("2023-12-31")) %>% 
   summarise(Mean_SST = mean(Mean_SST))
 
-plot_a <- ggplot(data = data_f1, aes(x = Date, y = Mean_SST, color = type, group = 1)) +
-  geom_line(show.legend = FALSE) +
+data_f1_labels <- data_f1 %>% 
+  filter(Date %in% c(as.Date("1998-04-28"), as.Date("2010-04-19"), as.Date("2016-03-18"), as.Date("2024-04-07"))) %>% 
+  mutate(label = case_when(Date == as.Date("1998-04-28") ~ "1998\n(GCBE1)",
+                           Date == as.Date("2010-04-19") ~ "2010\n(GCBE2)",
+                           Date == as.Date("2016-03-18") ~ "2016\n(GCBE3)",
+                           Date == as.Date("2024-04-07") ~ "2024\n(GCBE4)"))
+
+plot_a <- ggplot() +
+  geom_line(data = data_f1, aes(x = Date, y = Mean_SST, color = type, group = 1)) +
   scale_color_manual(breaks = c("GBE", "NGBE"),
-                     values = c("#d64541", "grey")) +
+                     labels = c("Global stress period", "Mean SST (daily)"),
+                     values = c("#d64541", "#57606f"),
+                     name = NULL) +
   geom_hline(yintercept = data_f1_mean$Mean_SST, linetype = "dashed") +
+  geom_text(data = data_f1_labels, aes(x = Date, y = Mean_SST+0.35, label = label)) +
   labs(x = "Year", y = "Sea surface\ntemperature (°C)") +
-  lims(y = c(22, 24)) +
+  lims(y = c(22, 24.5)) +
   theme_graph() +
   theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),
         axis.line.x = element_blank(),
-        axis.ticks.x = element_blank())
+        axis.ticks.x = element_blank(),
+        legend.position = c(0.02, 0.86),
+        legend.justification = c(0, 0),
+        legend.direction = "horizontal",
+        legend.background = element_rect(fill = NA, colour = NA),)
 
 data_plot <- data_f1 %>%
   drop_na(ONI_value) %>%
@@ -913,41 +923,50 @@ data_plot <- data_f1 %>%
          segment_color = factor(segment_color, c("El Niño", "Neutral", "La Niña"))) %>%
   drop_na(Date_next, ONI_next)
 
+data_plot_labels <- data_f1 |> 
+  drop_na(ONI_value) |> 
+  filter(Date %in% c("1987-08-01", "1992-01-01", "1997-12-01", "2009-11-30", "2015-12-01", "2023-12-01")) |> 
+  mutate(label = sprintf("%.1f °C", ONI_value))
+
 plot_b <- ggplot(data = data_plot) +
   geom_segment(aes(x = Date, xend = Date_next, y = ONI_value,
                    yend = ONI_next, color = segment_color), linewidth = 0.6) +
   scale_color_manual(values = c("El Niño" = "#d64541",
-                                "Neutral" = "grey",
+                                "Neutral" = "#57606f",
                                 "La Niña" = "#3288bd"),
                      name = NULL) +
   geom_hline(yintercept = 0) +
   geom_hline(yintercept = 1.5, linetype = "dashed", color = "#d64541") +
+  geom_text(data = data_plot_labels, aes(x = Date, y = ONI_value+0.4, label = label),
+            color = "#d64541", family = font_choose_graph) +
   labs(x = "Year", y = "Oceanic Niño\nIndex (°C)") +
-  scale_y_continuous(limits = c(-3, 3), breaks = c(-3, -2, -1, 0, 1, 2, 3), position = "right") +
+  scale_y_continuous(limits = c(-3, 3),
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3),
+                     minor_breaks = seq(-3, 3, by = 1),
+                     position = "right") +
   theme_graph() +
-  theme(   legend.position = c(0.02, 0.02),
-           legend.justification = c(0, 0),
-           legend.direction = "horizontal",
-           legend.background = element_rect(
-             fill = NA,
-             colour = NA
-           ))
+  theme(legend.position = c(0.02, 0.02),
+        legend.justification = c(0, 0),
+        legend.direction = "horizontal",
+        legend.background = element_rect(fill = NA, colour = NA),
+        plot.margin = margin(t = 0),
+        axis.text.y.right = element_text(margin = margin(l = 8)),
+        axis.title.y.right = element_text(margin = margin(l = 8)))
 
+plot_i <- plot_a + plot_b +
+  plot_layout(ncol = 1, heights = c(2, 1))
 
-
-
-
-
-
-
-plot_a + plot_b + plot_layout(ncol = 1)
+cowplot::ggdraw(plot_i) +
+  cowplot::draw_label("'Strong'\nEl Niño",
+                      x = 0.11, y = 0.3,
+                      hjust = 1, fontfamily = font_choose_graph, size = 10) +
+  cowplot::draw_label("Mean SST\n(2019–2023)",
+                      x = 0.91, y = 0.69,
+                      hjust = 0, fontfamily = font_choose_graph, size = 10)
 
 ggsave("figs/04_case-studies/case-study_4gbe_1.pdf", height = 8, width = 11, bg = "transparent")
 
 ## 11.2 Figure 2 ----
-
-# grid vertical tous les ans
-# year every 5 ans en ticks x
 
 data_f2 <- read.csv("data/14_case-studies/4gbe/Fig2_data.csv") %>% 
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>% 
@@ -967,11 +986,11 @@ ggplot(data = data_f2) +
                   fill = "Global stress periods"), alpha = 0.75) +
   geom_ribbon(data = data_f2 %>% filter(str_sub(event, 1, 1) == "N"),
                   aes(x = Date, ymin = 0, ymax = Alert_1, group = event,
-                      fill = "Non-Global stress periods"), alpha = 0.75) +
-  geom_line(aes(x = Date, y = Alert_1, linetype = "DHW ≥ 4"), linewidth = 0.6) +
-  geom_line(aes(x = Date, y = Alert_2, linetype = "DHW ≥ 8"), linewidth = 0.6) +
+                      fill = "Non-global stress periods"), alpha = 0.75) +
+  geom_line(aes(x = Date, y = Alert_1, linetype = "DHW ≥ 4"), linewidth = 0.3) +
+  geom_line(aes(x = Date, y = Alert_2, linetype = "DHW ≥ 8"), linewidth = 0.3) +
   scale_fill_manual(name = NULL,
-                    values = c("Non-Global stress periods" = "#3288bd",
+                    values = c("Non-global stress periods" = "#3288bd",
                                "Global stress periods" = "#d64541")) +
   scale_linetype_manual(name = NULL,
                         values = c("DHW ≥ 4" = "solid",
@@ -986,6 +1005,10 @@ ggplot(data = data_f2) +
   theme_graph() +
   theme(panel.background = element_rect(fill = "transparent", colour = NA),
         plot.background = element_rect(fill = "transparent", colour = NA),
+        panel.grid.major.x = element_line(colour = "grey85"),
+        panel.grid.minor.x = element_line(colour = "grey92"),
+        panel.grid.major.y = element_line(colour = "grey85"),
+        panel.grid.minor.y = element_blank(),
         legend.position = c(0.02, 0.98),
         legend.justification = c(0, 1),
         legend.direction = "vertical",
