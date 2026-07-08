@@ -895,9 +895,10 @@ plot_a <- ggplot() +
   geom_line(data = data_f1, aes(x = Date, y = Mean_SST, color = type, group = 1)) +
   scale_color_manual(breaks = c("GBE", "NGBE"),
                      labels = c("Global stress period", "Mean SST (daily)"),
-                     values = c("#d64541", "#57606f"),
+                     values = c("#ce6693", "#57606f"),
                      name = NULL) +
-  geom_hline(yintercept = data_f1_mean$Mean_SST, linetype = "dashed") +
+  #geom_hline(yintercept = data_f1_mean$Mean_SST, linetype = "dashed") +
+  geom_hline(yintercept = 23.2, linetype = "dashed") +
   geom_text(data = data_f1_labels, aes(x = Date, y = Mean_SST+0.35, label = label)) +
   labs(x = "Year", y = "Sea surface\ntemperature (°C)") +
   lims(y = c(22, 24.5)) +
@@ -961,10 +962,13 @@ cowplot::ggdraw(plot_i) +
                       x = 0.11, y = 0.3,
                       hjust = 1, fontfamily = font_choose_graph, size = 10) +
   cowplot::draw_label("Mean SST\n(2019–2023)",
-                      x = 0.91, y = 0.69,
+                      #x = 0.91, y = 0.69,
+                      x = 0.91, y = 0.68,
                       hjust = 0, fontfamily = font_choose_graph, size = 10)
 
 ggsave("figs/04_case-studies/case-study_4gbe_1.pdf", height = 8, width = 11, bg = "transparent")
+
+ggsave("figs/04_case-studies/case-study_4gbe_1.png", height = 8, width = 11, dpi = 300, bg = "transparent")
 
 ## 11.2 Figure 2 ----
 
@@ -994,7 +998,9 @@ ggplot(data = data_f2) +
                                "Global stress periods" = "#d64541")) +
   scale_linetype_manual(name = NULL,
                         values = c("DHW ≥ 4" = "solid",
-                                   "DHW ≥ 8" = "dashed")) +
+                                   "DHW ≥ 8" = "dashed"),
+                        breaks = c("DHW ≥ 4", "DHW ≥ 8"),
+                        labels = c("DHW ≥ 4°C-weeks", "DHW ≥ 8°C-weeks")) +
   scale_x_date(date_breaks = "5 years",
                date_minor_breaks = "1 year",
                date_labels = "%Y",
@@ -1003,8 +1009,8 @@ ggplot(data = data_f2) +
   labs(x = "Year",
        y = "Annual Bleaching Stress\nExtent (percent reefs)") +
   theme_graph() +
-  theme(panel.background = element_rect(fill = "transparent", colour = NA),
-        plot.background = element_rect(fill = "transparent", colour = NA),
+  theme(panel.background = element_rect(fill = "white", colour = NA),
+        plot.background = element_rect(fill = "white", colour = NA),
         panel.grid.major.x = element_line(colour = "grey85"),
         panel.grid.minor.x = element_line(colour = "grey92"),
         panel.grid.major.y = element_line(colour = "grey85"),
@@ -1024,6 +1030,8 @@ ggplot(data = data_f2) +
          fill = guide_legend(order = 2, ncol = 1))
 
 ggsave("figs/04_case-studies/case-study_4gbe_2.pdf", height = 4, width = 11, bg = "transparent")
+
+ggsave("figs/04_case-studies/case-study_4gbe_2.png", height = 4, width = 11, dpi = 300, bg = "transparent")
 
 # 12. MSC case study ----
 
