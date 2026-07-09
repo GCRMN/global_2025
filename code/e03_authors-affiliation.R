@@ -134,7 +134,10 @@ export_citation_latex <- function(region_i){
     distinct() %>% 
     filter(position <= 5) %>% 
     arrange(position) %>% 
-    mutate(author = paste0(last_name, ", ", substr(first_name, 1, 1), "."),
+    mutate(first_name = first_name %>% 
+             str_split(" ") %>% 
+             purrr::map_chr(~ paste0(substr(.x, 1, 1), ".", collapse = " ")),
+           author = paste0(last_name, ", ", first_name),
            region_name = case_when(region_name %in% c("Australia", "Brazil") ~ region_name,
                                    TRUE ~ paste0("the ", region_name)),
            citation = paste(author, collapse = ", "),
