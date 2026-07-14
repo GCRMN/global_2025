@@ -132,7 +132,7 @@ export_citation_latex <- function(region_i){
     filter(subpart == region_i) %>% 
     select(position, first_name, last_name, region_nb, region_name, chapter_doi) %>% 
     distinct() %>% 
-    filter(position <= 5) %>% 
+    filter(position <= 4) %>% 
     arrange(position) %>% 
     mutate(first_name = first_name %>% 
              str_split(" ") %>% 
