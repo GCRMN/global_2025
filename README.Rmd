@@ -95,16 +95,9 @@ Curabitur eu amet.
 * `d07_benthic-cover_trends.R`
 * `d08_case-studies.R`
 
-### Writing and sharing (`e_`)
-
-* `e01_generate_docx.R`
-* `e02_authors-contribution.R`
-
 ### Functions
 
 * `data_descriptors.R` Get number of sites, surveys, datasets, first and last year of monitoring.
-* `docx_chapter.Rmd` Template to generate the .docx regional chapters.
-* `docx_supp-mat.Rmd` Template to generate the .docx Supplementary Materials.
 * `extract_coeff.R` Extract slope from linear regression.
 * `graphical_par.R` Graphical parameters, including colors and fonts.
 * `map_region_geography.R` Map of region (geography).
@@ -113,7 +106,6 @@ Curabitur eu amet.
 * `plot_trends_model.R` Plot temporal trends from models.
 * `plot_trends_raw.R` Plot temporal trends from raw data.
 * `prepare_benthic_data.R` Prepare benthic cover data for models.
-* `styles.docx` Word document styles.
 * `theme_graph.R` Main ggplot theme for the plots of the reports.
 * `theme_map.R` Main ggplot theme for the maps of the reports.
 
