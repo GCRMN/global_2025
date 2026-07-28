@@ -42,7 +42,7 @@ cfg <- list(
     depth_filter = "shallow slope",
     shelf_override = NULL,
     depth_override = NULL,
-    title_fill_hex = "#a059a0"
+    title_fill_hex = "#FF856D"
   ),
   site_2 = list(
     domain_name = "LADY MUSGRAVE ISLAND",
@@ -51,7 +51,7 @@ cfg <- list(
     depth_filter = NULL,
     shelf_override = "Inshore",
     depth_override = "Deep slope",
-    title_fill_hex = "#3288bd"
+    title_fill_hex = "#1A497C"
   )
 )
 
@@ -288,7 +288,7 @@ radial.plot.summary<-function(dat,ref){
       coord_curvedpolar()+
       theme_bw()+
       theme(panel.border = element_blank(),
-            axis.text.x = element_text(size = 14),
+            axis.text.x = element_text(size = 16),
             axis.title.x = element_blank(),
             plot.margin = margin(0, 0, 0, 0),
             panel.grid.major = element_blank())
@@ -348,7 +348,7 @@ radial.plot.summary<-function(dat,ref){
         # axis.ticks = element_blank(),
         # axis.text.y = element_blank(),
         # Use gray text for the region names
-        axis.text.x = element_text(color = "gray20", size = 12 ),
+        axis.text.x = element_text(color = "gray20", size = 20),
         # Move the legend to the bottom
         legend.position = 'none',
       )
@@ -395,7 +395,7 @@ scores <- indices %>%
 # Plot styling ----
 scale_fill_class.c <- function(...) {
   scale_fill_manual(
-    values = c("Below" = "#d53e4f", "Within" = "#3288bd", "Above" = "#3288bd"),
+    values = c("Below" = "#FF856D", "Within" = "#1A497C", "Above" = "#1A497C"),
     drop = FALSE,
     ...
   )
@@ -415,7 +415,7 @@ make_radial_panel <- function(df, title_fill_hex) {
     labs(title = class_df %>% pull(Class)) +
     theme_graph() +
     theme(
-      axis.text = element_text(size = 16, vjust = 0.5, family = font_choose_graph),
+      axis.text = element_text(size = 18, vjust = 0.5, family = font_choose_graph),
       panel.background = element_rect(fill = "transparent", colour = NA),
       plot.background = element_rect(fill = "transparent", colour = NA),
       axis.title = element_text(
@@ -423,7 +423,7 @@ make_radial_panel <- function(df, title_fill_hex) {
         face = "bold",
         family = font_choose_graph,
         margin = margin(r = 10, unit = "mm")),
-      axis.text.x = element_text(hjust = 0.5, vjust = 0.5, size = 9),
+      axis.text.x = element_text(hjust = 0.5, vjust = 0.5, size = 20),
       axis.text.y = element_blank(),
       axis.ticks.y = element_blank(),
       axis.title.y = element_blank(),
@@ -439,7 +439,7 @@ make_radial_panel <- function(df, title_fill_hex) {
         r = unit(8, "pt"),
         padding = unit(c(5, 5, 5, 5), "pt"),
         width = NULL,
-        size = 14,
+        size = 24,
         margin = unit(c(0, 0, 0, 0), "pt"),
         halign = 0.5,
         hjust = 1
@@ -483,9 +483,11 @@ build_radial_df <- function(site_cfg) {
 
 df2b <- build_radial_df(cfg$site_1)
 plot_b <- make_radial_panel(df = df2b, title_fill_hex = cfg$site_1$title_fill_hex)
+ggsave("figs/04_case-studies/case-study_beyond-coral_plot-b.pdf", height = 6, width = 6, bg = "transparent")
 
 df2d <- build_radial_df(cfg$site_2)
 plot_d <- make_radial_panel(df = df2d, title_fill_hex = cfg$site_2$title_fill_hex)
+ggsave("figs/04_case-studies/case-study_beyond-coral_plot-d.pdf", height = 6, width = 6, bg = "transparent")
 
 rm(build_radial_df, make_radial_panel, scale_fill_class.c, Cond.Class,
    radial.plot.summary, comp_plot, scores, cfg, df2b, df2d, indices)

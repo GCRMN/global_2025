@@ -25,7 +25,7 @@ map_region_monitoring <- function(region_i, color_scalebar = "white"){
   
   plot_i <- ggplot() +
     #geom_sf(data = data_tropics, linetype = "dashed", linewidth = 0.25, color = "#483e37") +
-    geom_sf(data = data_subregions_i, color = "#57add2", fill = NA, linewidth = 0.2) +
+    geom_sf(data = data_subregions_i, color = "#31BDEA", fill = NA, linewidth = 0.2) +
     #geom_sf(data = data_countries, fill = "#dadfe1", color = "black", linewidth = 0.15) + # Land borders
     geom_sf(data = data_land, fill = "#dadfe1", color = "black", linewidth = 0.15) +
     geom_sf(data = data_benthic_sites_i %>% arrange(int_class),
@@ -221,7 +221,7 @@ map_region_monitoring <- function(region_i, color_scalebar = "white"){
     
     plot_i <- ggplot() +
       #geom_sf(data = data_tropics_pacific, linetype = "dashed", linewidth = 0.25, color = "#483e37") +
-      geom_sf(data = data_subregions_i, color = "#007caf", fill = NA, linewidth = 0.2) +
+      geom_sf(data = data_subregions_i, color = "#31BDEA", fill = NA, linewidth = 0.2) +
       #geom_sf(data = data_countries_pacific, fill = "#dadfe1", color = "black", linewidth = 0.15) + # Land borders
       geom_sf(data = data_land_pacific, fill = "#dadfe1", color = "black", linewidth = 0.15) +
       geom_sf(data = data_benthic_sites_i %>% arrange(int_class),

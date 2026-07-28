@@ -106,7 +106,7 @@ plot_a <- ggplot() +
   geom_sf(data = data_all %>% filter(report == "nb_surveys_2020"),
           aes(fill = colors), color = "#747d8c", show.legend = FALSE) +
   scale_fill_manual(breaks = rev(c("0", "1-5", "6-10", "11-20", "21-45", "46-70", "71-120")),
-                    values = rev(c("#ecf0f1", "#82ccdd", "#3498db", "#fa983a", "#e74c3c", "#c0392b", "#B53471")),
+                    values = rev(c("#ecf0f1", "#CDF3EE", "#8CCACC", "#83D7F2", "#486D96", "#1A497C", "#0C2F3B")),
                     name = "Number of\nsurveys") +
   geom_sf(data = data_countries, fill = "#dadfe1", color = "black", linewidth = 0.15) +
   theme_map() +
@@ -129,7 +129,7 @@ plot_a <- ggplot() +
                    text_cex = 0.8, style = "bar", line_width = 1, height = unit(0.04, "cm"),
                    line_col = color_scalebar, pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
                    bar_cols = c(color_scalebar, color_scalebar)) +
-  labs(title = "**A.** <span style='color:#2980b9'>2020</span> GCRMN report")
+  labs(title = "A. <span style='color:#1A497C'>2020</span> GCRMN report")
 
 ### 3.6.2 2025 data ----
 
@@ -137,7 +137,7 @@ plot_b <- ggplot() +
   geom_sf(data = data_all %>% filter(report == "nb_surveys_2025"),
           aes(fill = colors), color = "#747d8c", show.legend = TRUE) +
   scale_fill_manual(breaks = rev(c("0", "1-5", "6-10", "11-20", "21-45", "46-70", "71-120")),
-                    values = rev(c("#ecf0f1", "#82ccdd", "#3498db", "#fa983a", "#e74c3c", "#c0392b", "#B53471")),
+                    values = rev(c("#ecf0f1", "#CDF3EE", "#8CCACC", "#83D7F2", "#486D96", "#1A497C", "#0C2F3B")),
                     name = "Number of\nsurveys") +
   geom_sf(data = data_countries, fill = "#dadfe1", color = "black", linewidth = 0.15) +
   theme_map() +
@@ -161,7 +161,7 @@ plot_b <- ggplot() +
                    text_cex = 0.8, style = "bar", line_width = 1, height = unit(0.04, "cm"),
                    line_col = color_scalebar, pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
                    bar_cols = c(color_scalebar, color_scalebar)) +
-  labs(title = "**B.** <span style='color:#2980b9'>2025</span> GCRMN report")
+  labs(title = "B. <span style='color:#1A497C'>2025</span> GCRMN report")
 
 ### 3.6.3 Combine the plots ----
 
@@ -184,7 +184,7 @@ load("data/model-results.RData")
 data_2025 <- data_models %>% 
   filter(level %in% c("global", "region") & category == "Hard coral") %>% 
   mutate(source = "2025 GCRMN report",
-         color = "#c44569") %>% 
+         color = "#40A6AA") %>% 
   select(source, level, region, category, year, mean, lower_ci_80, upper_ci_80, lower_ci_95, upper_ci_95, color)
 
 data_2020 <- read.csv("../../2025-08-25_time-series/time_series/data/gcrmn_global_2021/ModelledTrends.all.sum.csv") %>% 
@@ -197,7 +197,7 @@ data_2020 <- read.csv("../../2025-08-25_time-series/time_series/data/gcrmn_globa
          region = str_replace_all(region, c("East Asia" = "EAS",
                                             "Global" = NA_character_)),
          source = "2020 GCRMN report",
-         color = "#2d98da") %>% 
+         color = "#1A497C") %>% 
   filter(category == "Hard coral") %>% 
   select(source, level, region, category, year, mean, lower_ci_80, upper_ci_80, lower_ci_95, upper_ci_95, color)
 
@@ -217,9 +217,9 @@ plot_a <- ggplot(data = data_trends %>% filter(level == "global"), aes(x = year,
         panel.background = element_rect(fill = "transparent", colour = NA),
         plot.background = element_rect(fill = "transparent", colour = NA)) +
   annotate("label", x = 2002, y = 24, label = "2025 GCRMN report",
-           family = font_choose_graph, fill = "#c44569", color = "white") +
+           family = font_choose_graph, fill = "#40A6AA", color = "white") +
   annotate("label", x = 2015, y = 37.5, label = "2020 GCRMN report",
-           family = font_choose_graph, fill = "#2d98da", color = "white") +
+           family = font_choose_graph, fill = "#1A497C", color = "white") +
   labs(x = "Year", y = "Hard coral cover (%)", title = "A")
 
 ggplot(data = data_trends %>% filter(level == "region"), aes(x = year, fill = color, color = color, group  = source)) +
@@ -267,8 +267,8 @@ data_sites_2020 <- read.csv2("data/02_misc/03-merge_all_all_all_benthos_NA.csv")
   mutate(report = "report 2020")
 
 data_sites <- bind_rows(data_sites_2020, data_sites_2025) %>% 
-  mutate(color = case_when(report == "report 2025" ~ "#c44569",
-                           report == "report 2020" ~ "#2d98da"))
+  mutate(color = case_when(report == "report 2025" ~ "#40A6AA",
+                           report == "report 2020" ~ "#1A497C"))
 
 plot_b <- ggplot(data = data_sites %>% filter(report == "report 2020"),
                  aes(x = year, y = n, fill = color)) +
@@ -351,22 +351,27 @@ ggsave("figs/04_case-studies/case-study_abs-rel.pdf", width = 8, height = 4)
 data_turf_length <- read.csv("data/14_case-studies/b_TurfLength.csv")
 
 plot_b <- ggplot(data = data_turf_length, aes(x = TurfLength.mm.)) +
-  geom_density(fill = "#7393C9", color = "#013C5E") +
+  geom_density(fill = "#486D96", color = "#0C2F3B") +
   theme_graph() +
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
         panel.background = element_rect(fill = "transparent", colour = NA)) +
-  annotate("segment", y = 0, yend = 0.23, x = 20, xend = 20, colour = "black", linetype = "dashed", linewidth = 0.2) +
-  annotate("text", x = 20, y = 0.2275, label = "Macroalgae", hjust = -0.175, color = "black") +
+  annotate("segment", y = 0, yend = 0.23, x = 20, xend = 20,
+           colour = "black", linetype = "dashed", linewidth = 0.2) +
+  annotate("text", x = 20, y = 0.2275, label = "Macroalgae", hjust = -0.175,
+           color = "black", family = font_choose_graph, size = 4) +
   annotate("segment", x = 20.75, y = 0.2175, xend = 24, yend = 0.2175,
            arrow = arrow(length = unit(0.015, "npc")), color = "#576574") +
-  annotate("text", x = 20, y = 0.2275, label = "Turf algae", hjust = 1.2, color = "#013C5E") +
+  annotate("text", x = 20, y = 0.2275, label = "Turf algae", hjust = 1.2,
+           color = "#486D96", family = font_choose_graph, size = 4) +
   annotate("segment", x = 19.25, y = 0.2175, xend = 16, yend = 0.2175,
            arrow = arrow(length = unit(0.015, "npc")), color = "#576574") +
   annotate("segment", y = 0, yend = 0.21, x = 3, xend = 3, colour = "black", linetype = "dashed", linewidth = 0.2) +
-  annotate("text", x = 3, y = 0.2075, label = "LSATs", hjust = -0.2, color = "#013C5E") +
+  annotate("text", x = 3, y = 0.2075, label = "LSATs", hjust = -0.2,
+           color = "#486D96", family = font_choose_graph, size = 4) +
   annotate("segment", x = 3.5, y = 0.20, xend = 5.5, yend = 0.20,
            arrow = arrow(length = unit(0.015, "npc")), color = "#576574") +
-  annotate("text", x = 3, y = 0.2075, label = "SPATs", hjust = 1.2, color = "#013C5E") +
+  annotate("text", x = 3, y = 0.2075, label = "SPATs", hjust = 1.2,
+           color = "#1A497C", family = font_choose_graph, size = 4) +
   annotate("segment", x = 2.5, y = 0.20, xend = 0.5, yend = 0.20,
            arrow = arrow(length = unit(0.015, "npc")), color = "#576574") +
   labs(x = "Turf length (mm)", y = "Relative frequency density") +
@@ -380,10 +385,10 @@ ggsave("figs/04_case-studies/case-study_turf_plot-b.pdf", width = 6, height = 5)
 data_turf_sed <- read.csv("data/14_case-studies/c_TurfVsSediment.csv")
 
 plot_c <- ggplot(data = data_turf_sed, aes(x = TurfLength.mm., y = SedimentLoad.g_m2.)) +
-  geom_point(color = "#7393C9") +
+  geom_point(color = "#486D96") +
   scale_x_log10() +
   scale_y_log10() +
-  geom_smooth(method = "lm", se = FALSE, color = "#013C5E") +
+  geom_smooth(method = "lm", se = FALSE, color = "#0C2F3B") +
   theme_graph() +
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
         panel.background = element_rect(fill = "transparent", colour = NA)) +
@@ -400,7 +405,7 @@ ggsave("figs/04_case-studies/case-study_turf_plot-c.pdf", width = 6, height = 5)
 color_scalebar <- "black"
 
 color_country <- tibble(country = c("Kenya", "Tanzania", "Madagascar"),
-                        color = c("#f8a07e", "#ce6693", "#5c53a5"))
+                        color = c("#40A6AA", "#31BDEA", "#1A497C"))
 
 data_countries <- read_sf("data/01_maps/01_raw/03_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
@@ -480,8 +485,8 @@ plot_kenya <- ggplot() +
                    line_col = color_scalebar, pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
                    bar_cols = c(color_scalebar, color_scalebar))  +
   geom_label(data = tibble(x = 38.2, y = -1.4), aes(x = x, y = y, label = "Kenya"),
-             family = font_choose_graph, hjust = 0, vjust = 1, size = 4,
-             fill = "#f8a07e", color = "white", linewidth = 0, label.r = unit(0, "lines"))
+             family = font_choose_graph, hjust = 0, vjust = 1, size = 4.5,
+             fill = "#40A6AA", color = "white", linewidth = 0, label.r = unit(0, "lines"))
 
 plot_tanzania <- ggplot() +
   geom_sf(data = data_countries) +
@@ -506,8 +511,8 @@ plot_tanzania <- ggplot() +
                    line_col = color_scalebar, pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
                    bar_cols = c(color_scalebar, color_scalebar))  +
   geom_label(data = tibble(x = 42.2, y = -4.5), aes(x = x, y = y, label = "Tanzania"),
-             family = font_choose_graph, hjust = 1, vjust = 1, size = 4,
-             fill = "#ce6693", color = "white", linewidth = 0, label.r = unit(0, "lines"))
+             family = font_choose_graph, hjust = 1, vjust = 1, size = 4.5,
+             fill = "#31BDEA", color = "white", linewidth = 0, label.r = unit(0, "lines"))
 
 plot_mada <- ggplot() +
   geom_sf(data = data_countries) +
@@ -537,8 +542,8 @@ plot_mada <- ggplot() +
                    line_col = color_scalebar, pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"),
                    bar_cols = c(color_scalebar, color_scalebar)) +
   geom_label(data = tibble(x = 47, y = -11.6), aes(x = x, y = y, label = "Madagascar"),
-             family = font_choose_graph, hjust = 0, vjust = 1, size = 4,
-             fill = "#5c53a5", color = "white", linewidth = 0, label.r = unit(0, "lines"))
+             family = font_choose_graph, hjust = 0, vjust = 1, size = 4.5,
+             fill = "#1A497C", color = "white", linewidth = 0, label.r = unit(0, "lines"))
 
 plot_region + plot_kenya + plot_tanzania + plot_mada & 
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
@@ -817,9 +822,9 @@ ggsave("figs/04_case-studies/case-study_traditional.png",
 
 load("data/14_case-studies/beyond_coral/GCRMN_CaseStudy_HC_reefs.RData")
 
-plot_timeseries <- function(domain_name_value, event_year, arrow_colour) {
+plot_timeseries <- function(domain_name_value, event_year, arrow_colour, subplot) {
   
-  GCRMN_CaseStudy_HC_reefs %>%
+  plot_i <- GCRMN_CaseStudy_HC_reefs %>%
     filter(domain_name == domain_name_value) %>%
     mutate(cond.range = case_when(report_year > event_year ~ "After", .default = "Before"),
            across(c("median", "lower", "upper"), ~.x*100)) %>%
@@ -840,24 +845,28 @@ plot_timeseries <- function(domain_name_value, event_year, arrow_colour) {
       scale_color_manual(values = c("grey", "black")) +
       scale_fill_manual(values = c("grey", "black")) +
       labs(x = "Year", y = "Hard coral cover (%)") +
-      theme_graph()
+      theme_graph() +
+      theme(panel.background = element_rect(fill = NA, colour = NA),
+            axis.title.x = element_text(size = 18),
+            axis.title.y = element_text(size = 18),
+            axis.text.x = element_text(size = 16),
+            axis.text.y = element_text(size = 16),
+            plot.background = element_rect(fill = NA, colour = NA))
+  
+  ggsave(paste0("figs/04_case-studies/case-study_beyond-coral_plot-", subplot, ".pdf"),
+         height = 4, width = 8.25, bg = "transparent")
+  
 }
 
-plot_a <- plot_timeseries(domain_name_value = "SNAPPER ISLAND", event_year = 2018, arrow_colour = "#a059a0")
+plot_timeseries(domain_name_value = "SNAPPER ISLAND", event_year = 2018,
+                          arrow_colour = "#FF856D", subplot = "a")
 
-plot_c <- plot_timeseries(domain_name_value = "LADY MUSGRAVE ISLAND", event_year = 2012, arrow_colour = "#3288bd")
+plot_timeseries(domain_name_value = "LADY MUSGRAVE ISLAND", event_year = 2012,
+                          arrow_colour = "#1A497C", subplot = "c")
 
 ## 10.2 Plot radar chart ----
 
 source("code/function/script_case-study_mgr.R")
-
-## 10.3 Combine the plots ----
-
-plot_a + plot_b + plot_c + plot_d + plot_layout(nrow = 2, widths = c(1.5, 1)) + plot_annotation(tag_levels = "A") & 
-  theme(plot.background = element_rect(fill = "transparent", colour = NA),
-        panel.background = element_rect(fill = "transparent", colour = NA))
-
-ggsave("figs/04_case-studies/case-study_beyond-coral.pdf", height = 8, width = 12, bg = "transparent")
 
 # 11. The 4th Global Bleaching Event ----
 
@@ -910,7 +919,7 @@ plot_a <- ggplot() +
         legend.position = c(0.02, 0.86),
         legend.justification = c(0, 0),
         legend.direction = "horizontal",
-        legend.background = element_rect(fill = NA, colour = NA),)
+        legend.background = element_rect(fill = NA, colour = NA))
 
 data_plot <- data_f1 %>%
   drop_na(ONI_value) %>%
@@ -1069,11 +1078,11 @@ data_graticules <- st_intersection(data_graticules,
   st_transform(., paste0("+proj=ortho +lat_0=0 +lon_0=", longitude))
 
 plot_i <- ggplot() +
-  geom_sf(data = b, fill = "#cfb7a5", col = "black", linewidth = 0.3) +
-  geom_sf(data = i, fill = "#bfdbee") +
-  geom_sf(data = data_graticules, color = "white") +
-  geom_sf(data = site_cays, color = "white", fill = "#c44d56", shape = 21, size = 12) +
-  geom_sf(data = b, fill = NA, col = "white", linewidth = 0.4) +
+  geom_sf(data = b, fill = "#0C2F3B", col = "black", linewidth = 0.3) +
+  geom_sf(data = i, fill = "#F2F2F2") +
+  geom_sf(data = data_graticules, color = "white", linewidth = 1) +
+  geom_sf(data = b, fill = NA, col = "#363737", linewidth = 0.4) +
+  geom_sf(data = site_cays, color = "white", fill = "#40A6AA", size = 9, shape = 23) +
   theme_minimal() +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
@@ -1089,30 +1098,30 @@ data_sites <- tibble(site = c("Lobo Horris", "Bull Run Reef", "Victory Reef", "T
                      longitude = c(-79.2256, -79.2478, -79.2735, -79.2992, -79.226)) %>% 
   st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
 
-xlim <- c(-79.35, -79.18)
+xlim <- c(-79.35, -79.14)
 
-ylim <- c(25.35, 25.61)
+ylim <- c(25.35, 25.56)
 
 bbox <- st_bbox(c(xmin = xlim[1], xmax = xlim[2],
                   ymin = ylim[1], ymax = ylim[2]),
                 crs = 4326)
 
 sat <- get_tiles(x = st_as_sfc(bbox), provider = "Esri.WorldImagery",
-                 zoom = 13, crop = TRUE)
+                 zoom = 15, crop = FALSE)
 
 color_scalebar <- "white"
 
 ggplot() +
   geom_spatraster_rgb(data = sat) +
-  geom_sf(data = data_sites, shape = 21, color = "white", fill = "#d64541", size = 3) +
+  geom_sf(data = data_sites, shape = 21, color = "white", fill = "#1A497C", size = 3) +
   geom_sf_label(data = data_sites %>% filter(site %in% c("Victory Reef", "Tuna Alley")),
                 aes(label = site), size = 4, nudge_x = 0.005, hjust = 0,
-                family = font_choose_graph, fill = "#d64541", alpha = 0.8, color = "white") +
+                family = font_choose_graph, fill = "#1A497C", alpha = 0.8, color = "white") +
   geom_sf_label(data = data_sites %>% filter(site %in% c("Welcome to the Jungle", "Lobo Horris",
                                                          "Bull Run Reef")),
                 aes(label = site), size = 4, nudge_x = -0.005, hjust = 1,
-                family = font_choose_graph, fill = "#d64541", alpha = 0.8, color = "white") +
-  coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +
+                family = font_choose_graph, fill = "#1A497C", alpha = 0.8, color = "white") +
+  coord_sf(xlim = xlim, ylim = ylim, expand = FALSE, default_crs = st_crs(4326)) +
   annotation_scale(location = "br",
                    width_hint = 0.25, text_family = font_choose_map, text_col = color_scalebar,
                    text_cex = 0.8, style = "bar", line_width = 1, height = unit(0.04, "cm"),
@@ -1121,8 +1130,8 @@ ggplot() +
   theme_map() +
   theme(panel.background = element_rect(fill = "transparent", colour = NA),
         plot.background = element_rect(fill = "transparent", colour = NA)) +
-  scale_x_continuous(breaks = c(-79.3, -79.2)) +
-  scale_y_continuous(breaks = c(25.4, 25.5, 25.6)) +
+  scale_x_continuous(breaks = c(-79.3, -79.2), limits = c(xlim[1], xlim[2])) +
+  scale_y_continuous(breaks = c(25.4, 25.5, 25.6), limits = c(ylim[1], ylim[2])) +
   theme(axis.text.y = element_text(hjust = 0.5))
 
-ggsave("figs/04_case-studies/case-study_msc_map.png", height = 6.9, width = 4.2, bg = "transparent")
+ggsave("figs/04_case-studies/case-study_msc_map.png", height = 6, width = 5.2, bg = "transparent")

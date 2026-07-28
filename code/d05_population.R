@@ -127,12 +127,12 @@ plot_raw <- ggplot(data = data_pop, aes(x = year, y = population, fill = region)
   geom_line(data = data_pop_global_all, aes(x = year, y = population), linewidth = 0.5, color = "black") +
   geom_point(data = data_pop_global, aes(x = year, y = population), size = 2,
              shape = 21, color = "white", fill = "black") +
-  scale_fill_manual(values = colorRampPalette(c("#82ccdd", "#0c2461"))(10)) +
+  scale_fill_manual(values = colorRampPalette(c("#83D7F2", "#0C2F3B"))(10)) +
   labs(x = "Year", y = "Inhabitants (millions)") +
   theme_graph() +
   theme(plot.background = element_rect(fill = "transparent", color = NA),
-        plot.margin = unit(c(0.2,3,0.2,0.2), "cm")) +
-  lims(y = c(0, 120), x = c(1999, 2025)) +
+        plot.margin = unit(c(0.2,6,0.2,0.2), "cm")) +
+  lims(y = c(0, 120), x = c(1999, 2020)) +
   geom_text(data = data_pop_global, aes(x = year, y = population, label = population),
             family = font_choose_graph, size = 4, hjust = 0.5, vjust = -1.5)
 

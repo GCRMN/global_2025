@@ -5,22 +5,15 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
   # (to be exact all years between first and last year with data)
   
   data_models <- data_models %>% 
-    mutate(color = case_when(category == "Hard coral" ~ "#c44d56",
-                             category == "Algae" ~ "#16a085",
-                             category == "Other fauna" ~ "#714d69",
-                             category == "Macroalgae" ~ "#03a678",
-                             category == "Turf algae" ~ "#26a65b",
-                             category == "Coralline algae" ~ "#C5987D"),
+    mutate(color = case_when(category == "Hard coral" ~ "#1A497C",
+                             category == "Macroalgae" ~ "#40A6AA",
+                             category == "Turf algae" ~ "#FF6648"),
            text_title = case_when(category == "Hard coral" ~ 
                                     glue("**A.**<span style='color:{color}'> {category}</span>"),
                                   category == "Macroalgae" ~ 
                                     glue("**B.**<span style='color:{color}'> {category}</span>"),
                                   category == "Turf algae" ~ 
-                                    glue("**C.**<span style='color:{color}'> {category}</span>"),
-                                  category == "Coralline algae" ~ 
-                                    glue("**D.**<span style='color:{color}'> {category}</span>"),
-                                  category == "Other fauna" ~ 
-                                    glue("**E.**<span style='color:{color}'> {category}</span>")))
+                                    glue("**C.**<span style='color:{color}'> {category}</span>")))
   
   # Global
   
@@ -99,15 +92,15 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                     hjust = 0.5, inherit.aes = FALSE, label.color = NA,
                     fill = "transparent", family = font_choose_graph, size = 4) +
       # GBE from Spady et al., 2026
-      annotate("rect", xmin = 1997, xmax = 2000, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.2) +
-      annotate("rect", xmin = 2009, xmax = 2012, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.2) +
-      annotate("rect", xmin = 2014, xmax = 2018, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.2) +
-      annotate("rect", xmin = 2018.5, xmax = 2025, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.2) +
+      annotate("rect", xmin = 1997, xmax = 2000, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
+      annotate("rect", xmin = 2009, xmax = 2012, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
+      annotate("rect", xmin = 2014, xmax = 2018, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
+      annotate("rect", xmin = 2018.5, xmax = 2025, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
       # Two years mortality events
-      annotate("rect", xmin = 1998, xmax = 2000, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.3) +
-      annotate("rect", xmin = 2010, xmax = 2012, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.3) +
-      annotate("rect", xmin = 2016, xmax = 2018, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.3) +
-      annotate("rect", xmin = 2023, xmax = 2025, ymin = 22, ymax = 34, fill = "#c44d56", alpha = 0.3) +
+      annotate("rect", xmin = 1998, xmax = 2000, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
+      annotate("rect", xmin = 2010, xmax = 2012, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
+      annotate("rect", xmin = 2016, xmax = 2018, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
+      annotate("rect", xmin = 2023, xmax = 2025, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
       geom_ribbon(aes(ymin = lower_ci_95, ymax = upper_ci_95), alpha = 0.35, color = NA, fill = "#747d8c") +
       geom_ribbon(aes(ymin = lower_ci_80, ymax = upper_ci_80), alpha = 0.45, color = NA, fill = "#747d8c") +
       geom_line(aes(y = mean), color = "#747d8c") +
@@ -197,7 +190,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
       } %>% 
       ungroup() %>% 
       filter(category %in% c("Hard coral", "Macroalgae", "Turf algae") & region == region_i) %>% 
-      filter(!(category == "Turf algae" & region %in% c("PERSGA", "South Asia", "EAS"))) %>% 
+      filter(!(category == "Turf algae" & region %in% c("RSGA", "South Asia", "EAS"))) %>% 
       group_by(category) %>% 
       transform_ribbons() %>% 
       ungroup()
@@ -213,7 +206,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
       scale_fill_identity() +
       theme_graph() +
       theme(legend.title.position = "top",
-            strip.text = element_markdown(hjust = 0, size = 14),
+            strip.text = element_markdown(hjust = 0, size = 15.5),
             legend.title = element_text(face = "bold", hjust = 0.5),
             panel.background = element_rect(fill = "transparent", colour = NA),
             plot.background = element_rect(fill = "transparent", colour = NA)) +
@@ -223,7 +216,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
       scale_y_continuous(limits = c(0, floor(max(data_i$upper_ci_95)/10)*10+10)) +
       labs(x = "Year", y = "Benthic cover (%)")
     
-    if(region_i %in% c("PERSGA", "South Asia", "EAS")){
+    if(region_i %in% c("RSGA", "South Asia", "EAS")){
       
       ggsave(filename = paste0("figs/03_part-2/fig-6/",
                                str_replace_all(str_replace_all(str_to_lower(region_i), " ", "-"), "---", "-"), ".png"),
@@ -285,7 +278,7 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                                         subregion_name == "Cocos Keeling and Christmas Island" ~ 
                                           "Cocos Keeling and<br>Christmas Island",
                                         TRUE ~ paste0(subregion_name, "<br>")),
-             text_title = glue("**{letter}.** {subregion}<br><span style='color:#636e72; font-size:12px'>{subregion_name}</span>")) %>% 
+             text_title = glue("**{letter}.** {subregion}<br><span style='color:#636e72; font-size:16px'>{subregion_name}</span>")) %>% 
       group_by(category, subregion) %>% 
       transform_ribbons() %>% 
       ungroup()
@@ -297,15 +290,15 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                   alpha = 0.5, show.legend = FALSE) +
       geom_line(aes(x = year, y = mean, color = color, group = group), show.legend = FALSE) +
       facet_wrap(~text_title, scales = "free", ncol = case_when(nb_subregions == 3 ~ 3,
-                                                               nb_subregions == 4 ~ 2,
-                                                               nb_subregions == 5 ~ 3,
-                                                               nb_subregions == 6 ~ 3,
-                                                               nb_subregions >= 7 ~ 4)) +
+                                                                nb_subregions == 4 ~ 2,
+                                                                nb_subregions == 5 ~ 3,
+                                                                nb_subregions == 6 ~ 3,
+                                                                nb_subregions >= 7 ~ 4)) +
       scale_color_identity() +
       scale_fill_identity() +
       theme_graph() +
       theme(legend.title.position = "top",
-            strip.text = element_markdown(hjust = 0, size = 12),
+            strip.text = element_markdown(hjust = 0, size = 14),
             legend.title = element_text(face = "bold", hjust = 0.5),
             panel.background = element_rect(fill = "transparent", colour = NA),
             plot.background = element_rect(fill = "transparent", colour = NA)) +

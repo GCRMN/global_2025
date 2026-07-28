@@ -234,6 +234,8 @@ plot_spacer() + plot_map + plot_spacer() +
 
 ggsave("figs/01_ex-summ/map_regions_raw.png", bg = "transparent", height = 6, width = 9, dpi = 300)
 
+ggsave("figs/01_ex-summ/map_regions_raw.pdf", bg = "transparent", height = 6, width = 9)
+
 ## 6.3 Arrows ----
 
 plot_arrow <- function(region_i){
@@ -253,6 +255,9 @@ plot_arrow <- function(region_i){
           plot.margin = margin(0, 0, 0, 0)) 
   
   ggsave(paste0("figs/01_ex-summ/arrow_", str_replace_all(str_to_lower(region_i), " ", "-"), ".png"),
+         bg = "transparent", height = 3, width = 3)
+  
+  ggsave(paste0("figs/02_part-1/fig_arrow-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
          bg = "transparent", height = 3, width = 3)
   
 }

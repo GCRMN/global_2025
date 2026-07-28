@@ -29,15 +29,15 @@ data_sst_anom <- data_sst %>%
   group_by(region, year) %>% 
   summarise(mean_sst_anom = mean(sst_anom)) %>% 
   ungroup() %>% 
-  mutate(color = case_when(mean_sst_anom < 0 ~ "#2c82c9",
-                           mean_sst_anom > 0 ~ "#d64541"))
+  mutate(color = case_when(mean_sst_anom < 0 ~ "#40A6AA",
+                           mean_sst_anom > 0 ~ "#1A497C"))
 
 ## 3.2 Regional ----
 
 plot_ssta <- function(region_i){
   
   plot_i <- ggplot(data = data_sst_anom %>% filter(region == region_i)) +
-    geom_bar(aes(x = year, y = mean_sst_anom, fill = color), stat = "identity") +
+    geom_bar(aes(x = year, y = mean_sst_anom, fill = color), stat = "identity", width = 0.8) +
     scale_fill_identity() +
     geom_hline(yintercept = 0) +
     labs(x = "Year", y = "SST anomaly (°C)") +

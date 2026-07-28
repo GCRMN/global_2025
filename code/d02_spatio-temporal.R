@@ -18,7 +18,7 @@ source("code/function/map_region_monitoring.R")
 
 # 3. Load data ----
 
-data_land <- st_read("data/01_maps/01_raw/03_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+data_land <- st_read("data/01_maps/01_raw/03_natural-earth/ne_10m_land/ne_10m_land.shp")
 
 data_region <- st_read("data/01_maps/02_clean/04_subregions/gcrmn_subregions.shp") %>% 
   rename(subregion = subregn)
@@ -112,13 +112,17 @@ plot_i <- ggplot() +
         plot.background = element_rect(fill = "transparent", color = NA),
         axis.ticks.length = unit(-0.1, "cm"),
         axis.text = element_text(family = font_choose_map, color = "black", size = 12, margin = margin(t = -6)),
-        axis.text.x.top = element_text(hjust = 0.5, vjust = -7),
-        axis.text.x.bottom = element_text(hjust = 0.5, vjust = 8),
-        axis.text.y = element_text(angle = 90, hjust = 0.5, vjust = -7),
-        axis.text.y.right = element_text(angle = -90, hjust = 0.5, vjust = -7)) +
+        axis.text.x.top = element_text(hjust = 0.5, vjust = -9),
+        axis.text.x.bottom = element_text(hjust = 0.5, vjust = 10),
+        axis.text.y.left = element_text(angle = 90, hjust = 0.5, vjust = -9),
+        axis.text.y.right = element_text(hjust = 0, vjust = 10)) +
   guides(color = guide_legend(override.aes = list(size = 3)))
 
 ggsave("figs/02_part-1/fig_monitoring-map-global.png", dpi = 600, height = 4, width = 12)
+
+ggsave("figs/02_part-1/fig_monitoring-map-global.pdf", height = 4, width = 12)
+
+ggsave("figs/02_part-1/fig_monitoring-map-global.svg", height = 4, width = 12, bg = "transparent")
 
 # 5. Monitoring map (regions) ----
 

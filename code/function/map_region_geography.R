@@ -22,7 +22,7 @@ map_region_geography <- function(region_i, color_scalebar = "white"){
   
   plot_i <- ggplot() +
     geom_spatraster_rgb(data = data_tif, maxcell = 5e+07) +
-    geom_sf(data = data_reefs_i, fill = "#ad5fad", color = "#ad5fad") +
+    geom_sf(data = data_reefs_i, fill = "#ad5fadff", color = "#ad5fadff") +
     geom_sf(data = data_subregions_i, color = "white", fill = NA, linewidth = 0.3) +
     geom_sf(data = data_tropics, linetype = "dashed", linewidth = 0.25, color = "#483e37") +
     #geom_sf(data = data_countries, fill = "NA", color = "black", linewidth = 0.15) + # Land borders
@@ -206,7 +206,7 @@ map_region_geography <- function(region_i, color_scalebar = "white"){
     
     plot_i <- ggplot() +
       geom_spatraster_rgb(data = data_tif_pacific, maxcell = 5e+07) +
-      geom_sf(data = data_reefs_pacific, fill = "#ad5fad", color = "#ad5fad") +
+      geom_sf(data = data_reefs_pacific, fill = "#ad5fadff", color = "#ad5fadff") +
       geom_sf(data = data_tropics_pacific, linetype = "dashed", linewidth = 0.25, color = "#483e37") +
       geom_sf(data = data_subregions_i, color = "white", fill = NA, linewidth = 0.3) +
       #geom_sf(data = data_countries, fill = "NA", color = "black", linewidth = 0.15) + # Land borders

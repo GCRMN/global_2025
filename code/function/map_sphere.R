@@ -34,10 +34,10 @@ map_sphere <- function(region_i){
     st_transform(., paste0("+proj=ortho +lat_0=0 +lon_0=", longitude))
   
   plot_i <- ggplot() +
-    geom_sf(data = b, fill = "#cfb7a5", col = "black", linewidth = 0.3) +
-    geom_sf(data = i, fill = "#bfdbee") +
-    geom_sf(data = data_graticules, color = "white") +
-    geom_sf(data = data_region_i, color = NA, fill = "#c44d56", alpha = 0.75) +
+    geom_sf(data = b, fill = "#0C2F3B", col = "black", linewidth = 0.3) +
+    geom_sf(data = i, fill = "#F2F2F2") +
+    geom_sf(data = data_graticules, color = "white", linewidth = 1) +
+    geom_sf(data = data_region_i, color = NA, fill = "#40A6AA", alpha = 0.75) +
     geom_sf(data = b, fill = NA, col = "#363737", linewidth = 0.4) +
     theme_minimal() +
     theme(axis.text = element_blank(),
