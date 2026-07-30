@@ -266,103 +266,79 @@ walk(unique(data_region$region), ~plot_arrow(region_i = .x))
 
 # 7. Figure 4 - Future trajectories ----
 
+data_simulation <- readRDS("data/02_misc/data_simulation.rds") |> 
+  group_by(scenario, time) |>
+  select(-draw) |>
+  summarise_draws(median = median,
+                  lower = ~quantile(., 0.025),
+                  upper = ~quantile(., 0.975)) |>
+  rename(lower = `2.5%`, upper = `97.5%`) |> 
+  rename(year = time) |> 
+  mutate(year = year+2023, across(c("median", "lower", "upper"), ~.x*100),
+         scenario = case_when(scenario == "1years recovery period" ~ "1 year",
+                              scenario == "2years recovery period" ~ "2 years",
+                              scenario ==  "4years recovery period" ~ "4 years",
+                              scenario == "10years recovery period" ~ "10 years"))
+
 data_models_hc <- data_models |> 
-  filter(category == "Hard coral" & level == "global") |> 
-  mutate(color = "black")
+  filter(category == "Hard coral" & level == "global")
 
 data_languages <- tibble(language = c("EN",
                                       "SP",
                                       "FR"),
-                         y_axis = c("Macroalgal cover (%)",
-                                    "Cobertura de macroalgas (%)",
-                                    "Couverture en macroalgues (%)"),
+                         y_axis = c("Hard coral cover (%)",
+                                    "Cobertura bentónica (%)",
+                                    "Couverture corallienne (%)"),
                          x_axis = c("Year",
                                     "Año",
                                     "Année"),
-                         title = c("Hypothetical trajectories of hard coral cover<br>through 2100 under various scenarios",
-                                   "Trayectorias hipotéticas de la cobertura de coral<br>para el año 2100 bajo diferentes escenarios",
-                                   "Trajectoires hypothétiques de la couverture corallienne<br>d'ici à 2100 sous différents scénarios"))
-
-data_1a <- spline(x = c(2024, 2060, 2100),
-                 y = c(24.64, 10, 2),
-                 xout = 2024:2100,
-                 method = "natural") |>
-  as_tibble()
-
-data_1b <- spline(x = c(2024, 2050, 2100),
-                 y = c(27.01, 16, 8),
-                 xout = 2024:2100,
-                 method = "natural") |>
-  as_tibble()
-
-data_1 <- left_join(data_1a |> rename(y_min = y), data_1b |> mutate(y_max = y)) |> 
-  rename(year = x) |> 
-  mutate(type = "Business as usual",
-         color = "#5c53a5")
-
-data_2a <- spline(x = c(2024, 2060, 2100),
-                  y = c(24.64, 13.5, 9),
-                  xout = 2024:2100,
-                  method = "natural") |>
-  as_tibble()
-
-data_2b <- spline(x = c(2024, 2050, 2100),
-                  y = c(27.01, 18.5, 14),
-                  xout = 2024:2100,
-                  method = "natural") |>
-  as_tibble() 
-
-data_2 <- left_join(data_2a |> rename(y_min = y), data_2b |> mutate(y_max = y)) |> 
-  rename(year = x) |> 
-  mutate(type = "Local management",
-         color = "#a059a0")
-
-data_3a <- spline(x = c(2024, 2070, 2100),
-                  y = c(24.64, 17, 19),
-                  xout = 2024:2100,
-                  method = "natural") |>
-  as_tibble()
-
-data_3b <- spline(x = c(2024, 2070, 2100),
-                  y = c(27.01, 20, 24),
-                  xout = 2024:2100,
-                  method = "natural") |>
-  as_tibble() 
-
-data_3 <- left_join(data_3a |> rename(y_min = y), data_3b |> mutate(y_max = y)) |> 
-  rename(year = x) |> 
-  mutate(type = "Climate change + Local management",
-         color = "#ce6693")
-
-data_trajectories <- bind_rows(data_1, data_2, data_3)
-
-rm(data_1a, data_1b, data_1, data_2a, data_2b, data_2, data_3a, data_3b, data_3)
+                         title = c("Possible future trajectories of global hard coral<br>cover based on historical trend",
+                                   "Posibles trayectorias futuras de la cobertura mundial de<br>corales duros basadas en la tendencia histórica",
+                                   "Trajectoires futures possibles de la couverture mondiale en<br>coraux durs fondées sur la tendance historique"))
 
 plot_exsum_trajectories <- function(language_i){
   
   data_languages_i <- data_languages |> 
     filter(language == language_i)
   
-  ggplot() +
-    geom_ribbon(data = data_models_hc, aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95), alpha = 0.6, color = NA) +
-    #geom_line(data = data_models_hc, aes(x = year, y = mean)) +
-    geom_ribbon(data = data_trajectories, aes(x = year, ymin = y_min, ymax = y_max, fill = color), alpha = 0.6, color = NA) +
-    scale_color_identity() +
-    scale_fill_identity() +
+  plot_i <- ggplot() +
+    geom_ribbon(data = data_models_hc, aes(x = year, ymin = lower_ci_80, ymax = upper_ci_80),
+                alpha = 0.35, color = NA, fill = "#747d8c") +
+    geom_ribbon(data = data_models_hc, aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95),
+                alpha = 0.45, color = NA, fill = "#747d8c") +
+    geom_line(data = data_models_hc, aes(x = year, y = mean), color = "#0C2F3B") +
+    geom_ribbon(data = data_simulation, aes(x = year, ymin = lower, ymax = upper, fill = scenario),
+                alpha = 0.8, linewidth = 0.5, show.legend = FALSE) +
+    scale_fill_manual(values = c("1 year" = palette_second[5],
+                                  "2 years" = palette_second[4],
+                                  "4 years" = palette_second[3],
+                                  "10 years" = palette_second[2]),
+                       name = "Recovery window",
+                       guide = guide_legend(override.aes = list(alpha = 1, linewidth = 1))) +
     theme_graph() +
     theme(panel.background = element_rect(fill = "transparent", colour = NA),
           plot.background = element_rect(fill = "transparent", colour = NA),
-          plot.title = element_markdown(color = "black", size = 18, lineheight = 1.2),
-          plot.subtitle = element_markdown(color = "grey", size = 14),
-          axis.title.y = element_blank(),
-          axis.text.y = element_blank()) +
-    scale_x_continuous(breaks = seq(1980, 2100, 10),
-                       limits = c(1979, 2101),
-                       labels = seq(1980, 2100, 10)) +
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          panel.grid = element_blank(),
+          axis.line.y = element_line(linewidth = 0.4),
+          legend.position = c(0.06, 0.06),
+          legend.justification = c(0, 0),
+          legend.direction = "vertical",
+          legend.background = element_blank(),
+          legend.key = element_blank(),
+          legend.title = element_text(family = font_choose_graph),
+          legend.text = element_text(family = font_choose_graph),
+          plot.title = element_markdown(color = "black", size = 18, lineheight = 1.2)) +
+    scale_x_continuous(breaks = seq(1980, 2095, 10),
+                       limits = c(1979, 2096),
+                       labels = seq(1980, 2095, 10)) +
     scale_y_continuous(limits = c(0, 40)) +
     labs(x = unique(data_languages_i$x_axis), y = unique(data_languages_i$y_axis),
          title = unique(data_languages_i$title))
-  
+    
   ggsave(paste0("figs/01_ex-summ/trajectories_", str_to_lower(language_i), "_raw.pdf"), height = 6, width = 9)
   
 }

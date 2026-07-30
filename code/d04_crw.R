@@ -306,7 +306,7 @@ plot_b <- ggplot(data = data_oni, aes(x = date, y = oni)) +
         axis.title.x = element_blank(),
         plot.background = element_blank()) +
   theme(axis.title.y = element_markdown()) +
-  labs(x = "Year", y = "Oceanic<br>Niño index")
+  labs(x = "Year", y = "Oceanic<br>Niño index (°C)")
 
 ## 7.3 Plot of DHW ----
 
@@ -413,7 +413,7 @@ plot_d <- ggplot(data = data_change, aes(x = date)) +
         #axis.line.x = element_blank(),
         #axis.title.x = element_blank(),
         plot.background = element_blank()) +
-  labs(x = "Year", y = "Relative change<br>in hard coral cover")
+  labs(x = "Year", y = "Relative change in<br>hard coral cover (%)")
 
 ## 7.5 Combine the plots ----
 
@@ -421,7 +421,7 @@ plot_a + plot_b + plot_c + plot_d +
   patchwork::plot_layout(ncol = 1) +
   plot_annotation(tag_levels = "A") &
   theme(plot.background = element_blank(),
-        plot.tag = element_text(face = "bold"),
+        #plot.tag = element_text(face = "bold"),
         plot.margin = margin(20, 25, 10, 10))
 
 ggsave("figs/02_part-1/fig_sst-dhw-oni-hcc.pdf", bg = "transparent", height = 12, width = 10)

@@ -61,8 +61,8 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
       geom_segment(data = data_hist_ref %>% filter(category == category_i), linetype = "dashed",
                    aes(x = 1980, xend = 2025, y = mean, yend = mean), inherit.aes = FALSE, color = "#747d8c") +
       geom_text(data = data_hist_ref %>% filter(category == category_i),
-                aes(x = 2025, y = mean), label = "Historical reference",
-                hjust = 1, size = 4.5, vjust = -1, color = "#747d8c",
+                aes(x = 2025, y = mean), label = "Reference period",
+                hjust = 1, size = 4.5, vjust = -1, color = "black",
                 family = font_choose_graph, inherit.aes = FALSE) +
       scale_color_identity() +
       scale_fill_identity() +
@@ -92,15 +92,15 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                     hjust = 0.5, inherit.aes = FALSE, label.color = NA,
                     fill = "transparent", family = font_choose_graph, size = 4) +
       # GBE from Spady et al., 2026
-      annotate("rect", xmin = 1997, xmax = 2000, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
-      annotate("rect", xmin = 2009, xmax = 2012, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
-      annotate("rect", xmin = 2014, xmax = 2018, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
-      annotate("rect", xmin = 2018.5, xmax = 2025, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.2) +
+      annotate("rect", xmin = 1997, xmax = 2000, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
+      annotate("rect", xmin = 2009, xmax = 2012, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
+      annotate("rect", xmin = 2014, xmax = 2018, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
+      annotate("rect", xmin = 2018.5, xmax = 2025, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
       # Two years mortality events
-      annotate("rect", xmin = 1998, xmax = 2000, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
-      annotate("rect", xmin = 2010, xmax = 2012, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
-      annotate("rect", xmin = 2016, xmax = 2018, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
-      annotate("rect", xmin = 2023, xmax = 2025, ymin = 22, ymax = 34, fill = "#FF6648", alpha = 0.3) +
+      annotate("rect", xmin = 1998, xmax = 2000, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
+      annotate("rect", xmin = 2010, xmax = 2012, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
+      annotate("rect", xmin = 2016, xmax = 2018, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
+      annotate("rect", xmin = 2023, xmax = 2025, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
       geom_ribbon(aes(ymin = lower_ci_95, ymax = upper_ci_95), alpha = 0.35, color = NA, fill = "#747d8c") +
       geom_ribbon(aes(ymin = lower_ci_80, ymax = upper_ci_80), alpha = 0.45, color = NA, fill = "#747d8c") +
       geom_line(aes(y = mean), color = "#747d8c") +
@@ -114,12 +114,12 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
       labs(x = "Year", y = paste0(category_i, " cover (%)"))
     
     plot_i_c <- ggplot(data = data_i %>% filter(category == category_i), aes(x = year)) +
-      annotate("rect", xmin = 1987, xmax = 1996, ymin = 22, ymax = 34, fill = "#03a678", alpha = 0.4) +
+      annotate("rect", xmin = 1987, xmax = 1996, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.4) +
       geom_richtext(data = data_labels_plot %>% filter(type == "recovery"), aes(x = x, y = 35, label = label),
                     hjust = 0.5, inherit.aes = FALSE, label.color = NA,
                     fill = "transparent", family = font_choose_graph, size = 4) +
-      annotate("rect", xmin = 2000, xmax = 2009, ymin = 22, ymax = 34, fill = "#03a678", alpha = 0.4) +
-      annotate("rect", xmin = 2017, xmax = 2021, ymin = 22, ymax = 34, fill = "#03a678", alpha = 0.4) +
+      annotate("rect", xmin = 2000, xmax = 2009, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.4) +
+      annotate("rect", xmin = 2017, xmax = 2021, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.4) +
       geom_ribbon(aes(ymin = lower_ci_95, ymax = upper_ci_95), alpha = 0.35, color = NA, fill = "#747d8c") +
       geom_ribbon(aes(ymin = lower_ci_80, ymax = upper_ci_80), alpha = 0.45, color = NA, fill = "#747d8c") +
       geom_line(aes(y = mean), color = "#747d8c") +
@@ -132,45 +132,49 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
       #scale_y_continuous(limits = c(0, floor(max(data_i$upper_ci_95)/10)*10+10)) +
       labs(x = "Year", y = paste0(ifelse(category_i == "Macroalgae", "Macroalgal", category_i), " cover (%)"))
     
+    fig_height <- 5
+    
+    fig_width <- 8.5
+    
     if(category_i == "Hard coral"){
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral.png"),
-             plot = plot_i, height = 6, width = 8.5, dpi = fig_resolution)
+             plot = plot_i, height = fig_height, width = fig_width, dpi = fig_resolution)
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral.pdf"),
-             plot = plot_i, height = 6, width = 8.5, bg = "transparent")
+             plot = plot_i, height = fig_height, width = fig_width, bg = "transparent")
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral_dec.png"),
-             plot = plot_i_b, height = 6, width = 8.5, dpi = fig_resolution)
+             plot = plot_i_b, height = fig_height, width = fig_width, dpi = fig_resolution)
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral_dec.pdf"),
-             plot = plot_i_b, height = 6, width = 8.5, bg = "transparent")
+             plot = plot_i_b, height = fig_height, width = fig_width, bg = "transparent")
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral_rec.png"),
-             plot = plot_i_c, height = 6, width = 8.5, dpi = fig_resolution)
+             plot = plot_i_c, height = fig_height, width = fig_width, dpi = fig_resolution)
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral_rec.pdf"),
-             plot = plot_i_c, height = 6, width = 8.5, bg = "transparent")
+             plot = plot_i_c, height = fig_height, width = fig_width, bg = "transparent")
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral_ref.png"),
-             plot = plot_i_ref, height = 6, width = 8.5, dpi = fig_resolution)
+             plot = plot_i_ref, height = fig_height, width = fig_width, dpi = fig_resolution)
       
       ggsave(filename = paste0("figs/02_part-1/fig_hard-coral_ref.pdf"),
-             plot = plot_i_ref, height = 6, width = 8.5, bg = "transparent")
+             plot = plot_i_ref, height = fig_height, width = fig_width, bg = "transparent")
       
     }else if(category_i == "Macroalgae"){
       
       ggsave(filename = paste0("figs/02_part-1/fig_macroalgae.png"),
-             plot = plot_i, height = 6, width = 8.5, dpi = fig_resolution)
+             plot = plot_i, height = fig_height, width = fig_width, dpi = fig_resolution)
       
       ggsave(filename = paste0("figs/02_part-1/fig_macroalgae.pdf"),
-             plot = plot_i, height = 6, width = 8.5, bg = "transparent")
+             plot = plot_i, height = fig_height, width = fig_width, bg = "transparent")
       
       ggsave(filename = paste0("figs/02_part-1/fig_macroalgae_ref.png"),
-             plot = plot_i_ref, height = 6, width = 8.5, dpi = fig_resolution)
+             plot = plot_i_ref, height = fig_height, width = fig_width, dpi = fig_resolution)
       
       ggsave(filename = paste0("figs/02_part-1/fig_macroalgae_ref.pdf"),
-             plot = plot_i_ref, height = 6, width = 8.5, bg = "transparent")
+             plot = plot_i_ref, height = fig_height, width = fig_width, bg = "transparent")
       
     }
     

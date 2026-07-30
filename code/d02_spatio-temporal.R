@@ -39,7 +39,7 @@ data_benthic_sites <- data_benthic %>%
   select(-nb_years) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-# 4. Monitoring map (global) ----
+# 4. Monitoring map (global - cropped) ----
 
 ## 4.1 Transform data ----
 
@@ -124,9 +124,115 @@ ggsave("figs/02_part-1/fig_monitoring-map-global.pdf", height = 4, width = 12)
 
 ggsave("figs/02_part-1/fig_monitoring-map-global.svg", height = 4, width = 12, bg = "transparent")
 
-# 5. Monitoring map (regions) ----
+# 5. Monitoring map (global - full) ----
 
-## 5.1 Load and transform data ----
+## 5.1 Transform data ----
+
+### 5.1.1 Define parameters to center map on the Pacific ----
+
+data_land <- st_read("data/01_maps/01_raw/03_natural-earth/ne_110m_land/ne_110m_land.shp")
+
+crs_selected <- st_crs("+proj=eqc +x_0=0 +y_0=0 +lat_0=0 +lon_0=160")
+
+offset <- 180 - 160
+
+polygon <- st_polygon(x = list(rbind(
+  c(-0.0001 - offset, 90),
+  c(0 - offset, 90),
+  c(0 - offset, -90),
+  c(-0.0001 - offset, -90),
+  c(-0.0001 - offset, 90)))) %>%
+  st_sfc() %>%
+  st_set_crs(4326)
+
+### 5.1.2 Transform land ----
+
+data_land <- data_land %>%
+  st_difference(polygon) %>%
+  st_simplify() %>%
+  st_collection_extract("POLYGON") %>%
+  st_cast("POLYGON", warn = FALSE) %>%
+  st_transform(crs = crs_selected) %>%
+  st_make_valid()
+
+### 5.1.3 Transform region ----
+
+data_region <- st_read("data/01_maps/02_clean/04_subregions/gcrmn_subregions.shp") %>% 
+  rename(subregion = subregn)
+
+data_region_pac <- data_region %>% 
+  filter(region == "Pacific") %>% 
+  st_difference(polygon) %>% 
+  st_transform(crs = crs_selected)
+
+data_region_pac %<>% # Special pipe from magrittr
+  st_buffer(10) %>% # To join polygon (remove vertical line)
+  nngeo::st_remove_holes(.)
+
+data_region <- data_region %>% 
+  filter(region != "Pacific") %>% 
+  st_difference(polygon) %>% 
+  st_transform(crs = crs_selected) %>% 
+  bind_rows(., data_region_pac)
+
+### 5.1.4 Transform benthic sites ----
+
+load("data/02_misc/data-benthic.RData")
+
+data_benthic_sites <- data_benthic %>% 
+  select(decimalLatitude, decimalLongitude, region, subregion, year) %>% 
+  distinct() %>% 
+  group_by(decimalLatitude, decimalLongitude, region, subregion) %>% 
+  count(name = "nb_years") %>% 
+  ungroup() %>% 
+  mutate(int_class = cut(nb_years, 
+                         breaks = c(-Inf, 1, 5, 10, 15, Inf),
+                         labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years")),
+         int_class = as.factor(int_class)) %>% 
+  arrange(int_class) %>% 
+  select(-nb_years) %>% 
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+## 5.2 Make the map ----
+
+plot_i <- ggplot() +
+  geom_sf(data = data_region, fill = "grey99") +
+  geom_sf(data = data_land) +
+  geom_sf(data = data_benthic_sites %>% arrange(int_class), aes(color = int_class), size = 1) +
+  scale_color_manual(values = palette_second,
+                     breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
+                     labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
+                     drop = FALSE,
+                     name = "NUMBER OF YEARS WITH DATA") +
+  coord_sf(expand = FALSE,
+           label_axes = list(top = "E", left = "N", right = "N", bottom = "E")) +
+  theme(legend.position = "top",
+        legend.title.position = "top",
+        legend.direction = "horizontal",
+        legend.title = element_text(size = 24, face = "bold", hjust = 0.5, family = font_choose_map, color = "#2c3e50"),
+        legend.text = element_text(size = 22, family = font_choose_map),
+        panel.border = element_rect(fill = NA, color = "black"),
+        panel.background = element_rect(fill = "transparent"),
+        panel.grid = element_blank(),
+        legend.background = element_rect(fill = "transparent"),
+        plot.background = element_rect(fill = "transparent", color = NA),
+        axis.ticks.length = unit(-0.1, "cm"),
+        axis.text = element_text(family = font_choose_map, color = "black", size = 12, margin = margin(t = -6)),
+        axis.text.x.top = element_text(hjust = 0.5, vjust = -9),
+        axis.text.x.bottom = element_text(hjust = 0.5, vjust = 10),
+        axis.text.y.left = element_text(angle = 90, hjust = 0.5, vjust = -9),
+        axis.text.y.right = element_text(hjust = 0, vjust = 10)) +
+  guides(color = guide_legend(override.aes = list(size = 3)))
+
+ggsave("figs/02_part-1/fig_monitoring-map-global_full.png", dpi = 600, height = 9, width = 12, bg = "transparent")
+
+ggsave("figs/02_part-1/fig_monitoring-map-global_full.pdf", height = 9, width = 12, device = cairo_pdf, bg = "transparent")
+
+ggsave("figs/02_part-1/fig_monitoring-map-global_full.svg", height = 9, width = 12, device = svglite::svglite, bg = "transparent")
+
+# 6. Monitoring map (regions) ----
+
+## 6.1 Load and transform data ----
 
 data_benthic_sites <- data_benthic_sites %>% 
   st_transform(crs = 4326)
@@ -152,18 +258,18 @@ data_subregions <- st_difference(data_subregions, st_union(data_countries))
 
 data_tropics <- st_difference(data_tropics, st_union(data_countries))
 
-## 5.2 Make the map ----
+## 6.2 Make the map ----
 
 map(unique(data_subregions$region), ~map_region_monitoring(region_i = .))
 
-## 5.3 Export the legend ----
+## 6.3 Export the legend ----
 
 ggplot(data = tibble(color = palette_second,
                      label = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
                      y = seq(1, 5, 1)),
        aes(y = y)) +
   geom_point(aes(x = 1, color = color), size = 8) +
-  geom_text(aes(x = 2, label = label), hjust = 0, size = 6) +
+  geom_text(aes(x = 2, label = label), hjust = 0, size = 6, family = font_choose_graph) +
   scale_color_identity() +
   lims(x = c(0, 5), y = c(0.5, 5.5)) +
   theme(panel.background = element_rect(fill = "transparent"),
@@ -175,9 +281,9 @@ ggplot(data = tibble(color = palette_second,
 
 ggsave("figs/03_part-2/fig-9/legend.png", width = 2.5, height = 3, bg = "transparent")
 
-# 6. Monitoring descriptors ----
+# 7. Monitoring descriptors ----
 
-## 6.1 Global ----
+## 7.1 Global ----
 
 data_benthic %>% 
   group_by(region) %>% 
@@ -188,7 +294,7 @@ data_benthic %>%
   write.csv(., file = paste0("figs/02_part-1/tbl-1_monitoring.csv"),
             row.names = FALSE)
 
-## 6.2 Regional ----
+## 7.2 Regional ----
 
 data_benthic %>% 
   group_by(region, subregion) %>% 
@@ -216,7 +322,7 @@ data_benthic %>%
   arrange(region, subregion, .locale = "en") %>% 
   write.csv(., file = "figs/08_text-gen/monitoring.csv", row.names = FALSE)
 
-## 6.3 By region and country ----
+## 7.3 By region and country ----
 
 data_benthic %>% 
   group_by(region, country) %>% 
@@ -226,7 +332,7 @@ data_benthic %>%
   write.csv(., file = "figs/07_additional/02_data-exploration/monitoring_region-country.csv",
             row.names = FALSE)
 
-## 6.4 By country ----
+## 7.4 By country ----
 
 data_benthic %>% 
   group_by(country) %>% 
@@ -236,9 +342,9 @@ data_benthic %>%
   write.csv(., file = "figs/07_additional/02_data-exploration/monitoring_country.csv",
             row.names = FALSE)
 
-# 7. Number of surveys per year ----
+# 8. Number of surveys per year ----
 
-## 7.1 Global ----
+## 8.1 Global ----
 
 data_benthic %>% 
   select(decimalLatitude, decimalLongitude, eventDate, year) %>% 
@@ -261,9 +367,9 @@ data_benthic %>%
 
 ggsave("figs/02_part-1/fig_surveys-per-year.png", width = 5, height = 4, dpi = fig_resolution, bg = "transparent")
 
-## 7.2 Regional ----
+## 8.2 Regional ----
 
-### 7.2.1 Create the function ----
+### 8.2.1 Create the function ----
 
 plot_surveys_year <- function(gcrmn_region){
   
@@ -291,11 +397,11 @@ plot_surveys_year <- function(gcrmn_region){
   
 }
 
-### 7.2.2 Map over the function ----
+### 8.2.2 Map over the function ----
 
 map(unique(data_region$region), ~plot_surveys_year(gcrmn_region = .))
 
-## 7.2.3 Subplots ----
+## 8.2.3 Subplots ----
 
 plot_i <- data_benthic %>% 
   select(region, decimalLatitude, decimalLongitude, eventDate, year) %>% 
@@ -331,9 +437,9 @@ plot_i <- data_benthic %>%
 ggsave("figs/06_supp-mat/surveys-year.png", width = 7, height = 10, dpi = fig_resolution, bg = "transparent")
 ggsave("figs/06_supp-mat/surveys-year.pdf", width = 7, height = 10, dpi = fig_resolution, bg = "transparent")
 
-# 8. Number of surveys per depth ----
+# 9. Number of surveys per depth ----
 
-## 8.1 Global ----
+## 9.1 Global ----
 
 data_benthic %>% 
   select(decimalLatitude, decimalLongitude, eventDate, year, verbatimDepth) %>% 
@@ -352,9 +458,9 @@ data_benthic %>%
 
 ggsave("figs/02_part-1/fig-3.png", width = 5, height = 4, dpi = fig_resolution, bg = "transparent")
 
-## 8.2 Regional ----
+## 9.2 Regional ----
 
-### 8.2.1 Create the function ----
+### 9.2.1 Create the function ----
 
 plot_surveys_depth <- function(gcrmn_region){
   
@@ -378,11 +484,11 @@ plot_surveys_depth <- function(gcrmn_region){
   
 }
 
-## 8.2.2 Map over the function ----
+## 9.2.2 Map over the function ----
 
 map(unique(data_region$region), ~plot_surveys_depth(gcrmn_region = .))
 
-## 8.2.3 Subplots ----
+## 9.2.3 Subplots ----
 
 plot_i <- data_benthic %>% 
   select(region, territory, decimalLatitude, decimalLongitude, eventDate, year, verbatimDepth) %>% 
@@ -413,9 +519,9 @@ plot_i <- data_benthic %>%
 ggsave("figs/06_supp-mat/surveys-depth.png", width = 7, height = 10, dpi = fig_resolution, bg = "transparent")
 ggsave("figs/06_supp-mat/surveys-depth.pdf", width = 7, height = 10, dpi = fig_resolution, bg = "transparent")
 
-# 9. Number of sites per datasetID and year (per subregion) ----
+# 10. Number of sites per datasetID and year (per subregion) ----
 
-## 9.1 Transform data ----
+## 10.1 Transform data ----
 
 data_sources <- read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
   select(datasetID, rightsHolder) %>% 
@@ -434,7 +540,7 @@ data_year_dataset <- data_benthic %>%
                         "</b><br><span style = 'font-size:10pt'>(",
                         rightsHolder, ")</span>"))
 
-## 9.2 Create a function to produce the plot ----
+## 10.2 Create a function to produce the plot ----
 
 plot_year_dataset <- function(subregion_i){
   
@@ -526,13 +632,13 @@ plot_year_dataset <- function(subregion_i){
   
 }
 
-## 9.3 Map over the function ----
+## 10.3 Map over the function ----
 
 map(unique(data_benthic$subregion), ~plot_year_dataset(subregion_i = .))
 
-# 10. Number of sites per dataset and year (per region) ----
+# 11. Number of sites per dataset and year (per region) ----
 
-## 10.1 Transform data ----
+## 11.1 Transform data ----
 
 data_year_dataset <- data_benthic %>% 
   group_by(region, year) %>% 
@@ -543,7 +649,7 @@ data_year_dataset <- data_benthic %>%
            year = 1980:2024,
            fill = list(nb_sites = 0))
 
-## 10.2 Create a function to produce the plot ----
+## 11.2 Create a function to produce the plot ----
 
 plot_year_region <- function(region_i){
   
@@ -622,13 +728,13 @@ plot_year_region <- function(region_i){
   
 }
 
-## 10.3 Map over the function ----
+## 11.3 Map over the function ----
 
 map(unique(data_benthic$region), ~plot_year_region(region_i = .))
 
-# 11. Number of sites per number of monitoring years ----
+# 12. Number of sites per number of monitoring years ----
 
-## 11.1 Transform data ----
+## 12.1 Transform data ----
 
 load("data/02_misc/data-benthic.RData")
 
@@ -652,7 +758,7 @@ data_benthic_sites <- data_benthic %>%
                                             "PERSGA" = "Red Sea and Gulf of Aden",
                                             "WIO" = "Western Indian Ocean")))
 
-## 11.2 Make the plot ----
+## 12.2 Make the plot ----
 
 ggplot(data = data_benthic_sites, aes(x = int_class, y = perc,
        label = paste0(round(perc, 1), "%<br>(", "<i>n</i> = ", format(n, big.mark = ","),")"))) +
@@ -675,7 +781,7 @@ ggplot(data = data_benthic_sites, aes(x = int_class, y = perc,
 ggsave("figs/06_supp-mat/sites-range.png", width = 7, height = 10.5, dpi = fig_resolution, bg = "transparent")
 ggsave("figs/06_supp-mat/sites-range.pdf", width = 7, height = 10.5, dpi = fig_resolution, bg = "transparent")
 
-# 12 Monitoring descriptors per subregions ----
+# 13. Monitoring descriptors per subregions ----
 
 load("data/02_misc/data-benthic.RData")
 
@@ -703,11 +809,11 @@ data_monitoring <- data_benthic %>%
          region = case_when(region == "All" ~ "Global",
                             TRUE ~ region))
 
-## 12.1 Export as .xlsx ----
+## 13.1 Export as .xlsx ----
 
 openxlsx::write.xlsx(data_monitoring, file = "figs/06_supp-mat/monitoring-descriptors.xlsx")
 
-## 12.2 Export as .tex ----
+## 13.2 Export as .tex ----
 
 writeLines(c(map(1:nrow(data_monitoring), ~c(paste0(data_monitoring[.x,"region"], " & ",
                                                     data_monitoring[.x,"subregion"], " & ",
