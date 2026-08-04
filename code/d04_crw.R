@@ -256,15 +256,13 @@ write.csv(data_sst_trends, file = "figs/08_text-gen/thermal_regime.csv", row.nam
 
 load("data/02_misc/data_sst.RData")
 
-data_sst_anom <- data_sst %>% 
+data_sst <- data_sst %>% 
   filter(region == "All") %>% 
-  group_by(region) %>% 
-  mutate(sst_mean = mean(sst)) %>% 
-  ungroup() %>% 
   mutate(year = year(date),
-         sst_anom = sst - sst_mean)
+         sst = zoo::rollapply(sst, 3, mean, align = "center", fill = NA)) %>% 
+  slice(seq(1, n(), by = 5)) # Select only one point row every 5 rows to decrease PDF figure weights
 
-plot_a <- ggplot(data = data_sst_anom, aes(x = date, y = sst)) +
+plot_a <- ggplot(data = data_sst, aes(x = date, y = sst)) +
   geom_line(linewidth = 0.2) +
   scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
   theme_graph() +
@@ -289,13 +287,13 @@ data_oni <- read.csv("data/02_misc/oni.csv") %>%
 plot_b <- ggplot(data = data_oni, aes(x = date, y = oni)) +
   geom_hline(yintercept = 0, linewidth = 0.3) +
   geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni < 0.5, 0.5, oni)),
-              aes(x = date, ymin = 0.5, ymax = oni), fill = "#d64541", alpha = 0.5) +
+              aes(x = date, ymin = 0.5, ymax = oni), fill = "#1A497C", alpha = 0.5) +
   geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni < 1.5, 1.5, oni)),
-              aes(x = date, ymin = 1.5, ymax = oni), fill = "#d64541", alpha = 1) +
+              aes(x = date, ymin = 1.5, ymax = oni), fill = "#1A497C", alpha = 1) +
   geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -0.5, -0.5, oni)),
-              aes(x = date, ymin = -0.5, ymax = oni), fill = "#2c82c9", alpha = 0.5) +
+              aes(x = date, ymin = -0.5, ymax = oni), fill = "#40A6AA", alpha = 0.5) +
   geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -1.5, -1.5, oni)),
-              aes(x = date, ymin = -1.5, ymax = oni), fill = "#2c82c9", alpha = 1) +
+              aes(x = date, ymin = -1.5, ymax = oni), fill = "#40A6AA", alpha = 1) +
   geom_path(linewidth = 0.2) +
   scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
   theme_graph() +
@@ -405,6 +403,7 @@ plot_d <- ggplot(data = data_change, aes(x = date)) +
         legend.direction = "vertical",
         legend.background = element_blank(),
         legend.title = element_text(hjust = 0, size = 13, family = font_choose_graph),
+        legend.box.margin = margin(0, 0, 0, -25),
         legend.key.size = unit(0.5, "cm"),
         legend.text = element_text(size = 11),
         axis.title.y = element_markdown(),

@@ -75,6 +75,13 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
       #scale_y_continuous(limits = c(0, floor(max(data_i$upper_ci_95)/10)*10+10)) +
       labs(x = "Year", y = paste0(ifelse(category_i == "Macroalgae", "Macroalgal", category_i), " cover (%)"))
     
+    data_rect_plot <- tibble(nb = 1:8,
+                             type = c(rep("Mortality", 4), rep("GBE", 4)),
+                             xmin = c(1997, 2009, 2014, 2018.5, 1998, 2010, 2016, 2023),
+                             xmax = c(2000, 2012, 2018, 2025, 2000, 2012, 2018, 2025),
+                             ymin = 22,
+                             ymax = 34)
+    
     data_labels_plot <- tibble(type = c("decline", "decline", "decline", "decline",
                                         "recovery", "recovery", "recovery"),
                           x = c(1999, 2011, 2017, 2024,
@@ -87,23 +94,26 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
                                     "<span style='color:#03a678;'>+4.8%</span><br><span style='font-size:8pt;'>Weak evidence</span>",
                                     "<span style='color:#03a678;'>+13.9%</span><br><span style='font-size:8pt;'>Strong evidence</span>"))
     
-    plot_i_b <- ggplot(data = data_i %>% filter(category == category_i), aes(x = year)) +
+    plot_i_b <- ggplot() +
       geom_richtext(data = data_labels_plot %>% filter(type == "decline"), aes(x = x, y = 35, label = label),
                     hjust = 0.5, inherit.aes = FALSE, label.color = NA,
                     fill = "transparent", family = font_choose_graph, size = 4) +
       # GBE from Spady et al., 2026
-      annotate("rect", xmin = 1997, xmax = 2000, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
-      annotate("rect", xmin = 2009, xmax = 2012, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
-      annotate("rect", xmin = 2014, xmax = 2018, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
-      annotate("rect", xmin = 2018.5, xmax = 2025, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.2) +
+      geom_rect(data = data_rect_plot,
+                aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, group = nb),
+                fill = "#747d8c", alpha = 0.2) +
       # Two years mortality events
-      annotate("rect", xmin = 1998, xmax = 2000, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
-      annotate("rect", xmin = 2010, xmax = 2012, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
-      annotate("rect", xmin = 2016, xmax = 2018, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
-      annotate("rect", xmin = 2023, xmax = 2025, ymin = 22, ymax = 34, fill = "#1A497C", alpha = 0.3) +
-      geom_ribbon(aes(ymin = lower_ci_95, ymax = upper_ci_95), alpha = 0.35, color = NA, fill = "#747d8c") +
-      geom_ribbon(aes(ymin = lower_ci_80, ymax = upper_ci_80), alpha = 0.45, color = NA, fill = "#747d8c") +
-      geom_line(aes(y = mean), color = "#747d8c") +
+      geom_rect(data = data_rect_plot,
+                aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, group = nb),
+                fill = "#747d8c", alpha = 0.3) +
+      geom_ribbon(data = data_i %>% filter(category == category_i),
+                  aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95),
+                  alpha = 0.35, color = NA, fill = "#1A497C") +
+      geom_ribbon(data = data_i %>% filter(category == category_i),
+                  aes(x = year, ymin = lower_ci_80, ymax = upper_ci_80),
+                  alpha = 0.45, color = NA, fill = "#1A497C") +
+      geom_line(data = data_i %>% filter(category == category_i),
+                aes(x = year, y = mean), color = "#1A497C") +
       theme_graph() +
       theme(panel.background = element_rect(fill = "transparent", colour = NA),
             plot.background = element_rect(fill = "transparent", colour = NA)) +
@@ -321,12 +331,12 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
     ggsave(filename = paste0("figs/03_part-2/", fig_i, "/",
                              str_replace_all(str_replace_all(str_to_lower(region_i), " ", "-"), "---", "-"), ".png"),
            plot = plot_i,
-           height = case_when(nb_subregions == 3 ~ 3.5,
+           height = case_when(nb_subregions == 3 ~ 4,
                               nb_subregions == 4 ~ 5.5,
                               nb_subregions == 5 ~ 5.5,
                               nb_subregions == 6 ~ 5.5,
                               nb_subregions >= 7 ~ 7),
-           width = case_when(nb_subregions == 3 ~ 8,
+           width = case_when(nb_subregions == 3 ~ 9.14,
                              nb_subregions == 4 ~ 6.5,
                              nb_subregions == 5 ~ 9,
                              nb_subregions == 6 ~ 9,
@@ -336,12 +346,12 @@ plot_trends_model <- function(region_i, level_i, category_i = NA, range = NA){
     ggsave(filename = paste0("figs/03_part-2/", fig_i, "/",
                              str_replace_all(str_replace_all(str_to_lower(region_i), " ", "-"), "---", "-"), ".pdf"),
            plot = plot_i,
-           height = case_when(nb_subregions == 3 ~ 3.5,
+           height = case_when(nb_subregions == 3 ~ 4,
                               nb_subregions == 4 ~ 5.5,
                               nb_subregions == 5 ~ 5.5,
                               nb_subregions == 6 ~ 5.5,
                               nb_subregions >= 7 ~ 7),
-           width = case_when(nb_subregions == 3 ~ 8,
+           width = case_when(nb_subregions == 3 ~ 9.14,
                              nb_subregions == 4 ~ 6.5,
                              nb_subregions == 5 ~ 9,
                              nb_subregions == 6 ~ 9,

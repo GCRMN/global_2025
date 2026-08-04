@@ -314,8 +314,8 @@ data_box <- tibble(year = seq(2000, 2010, 1),
                    cover = c(38, 39, 35, 37, 38, 39, 42, 38, 37,
                              41, 19),
                    position = seq(1,11,1)) %>% 
-  mutate(color = case_when(position == max(position) ~ "#013C5E",
-                           position == max(position-1) ~ "#C44D56",
+  mutate(color = case_when(position == max(position) ~ "#1A497C",
+                           position == max(position-1) ~ "#FF856D",
                            TRUE ~ "#bdc3c7"))
 
 plot_a <- ggplot(data = data_box, aes(x = year, y = cover, fill = color, group = 1)) +
@@ -336,8 +336,8 @@ plot_a <- ggplot(data = data_box, aes(x = year, y = cover, fill = color, group =
         axis.ticks.y = element_blank()) +
   labs(x = "Year", y = "Hard coral cover (%)")
 
-(plot_a + labs(title = "**A.** Absolute change")) + 
-  (plot_a + labs(title = "**B.** Relative change")) &
+(plot_a + labs(title = "**A**. Absolute change")) + 
+  (plot_a + labs(title = "**B**. Relative change")) &
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
         panel.background = element_rect(fill = "transparent", colour = NA))
 
@@ -908,7 +908,7 @@ plot_a <- ggplot() +
                      name = NULL) +
   #geom_hline(yintercept = data_f1_mean$Mean_SST, linetype = "dashed") +
   geom_hline(yintercept = 23.2, linetype = "dashed") +
-  geom_text(data = data_f1_labels, aes(x = Date, y = Mean_SST+0.35, label = label)) +
+  geom_text(data = data_f1_labels, aes(x = Date, y = Mean_SST+0.35, label = label), family = font_choose_graph) +
   labs(x = "Year", y = "Sea surface\ntemperature (°C)") +
   lims(y = c(22, 24.5)) +
   theme_graph() +
@@ -955,7 +955,9 @@ plot_b <- ggplot(data = data_plot) +
                      minor_breaks = seq(-3, 3, by = 1),
                      position = "right") +
   theme_graph() +
-  theme(legend.position = c(0.02, 0.02),
+  theme(panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.background = element_rect(fill = "transparent", colour = NA),
+        legend.position = c(0.02, 0.02),
         legend.justification = c(0, 0),
         legend.direction = "horizontal",
         legend.background = element_rect(fill = NA, colour = NA),
@@ -964,7 +966,9 @@ plot_b <- ggplot(data = data_plot) +
         axis.title.y.right = element_text(margin = margin(l = 8)))
 
 plot_i <- plot_a + plot_b +
-  plot_layout(ncol = 1, heights = c(2, 1))
+  plot_layout(ncol = 1, heights = c(2, 1)) & 
+  theme(plot.background = element_rect(fill = "transparent", colour = NA),
+        panel.background = element_rect(fill = "transparent", colour = NA))
 
 cowplot::ggdraw(plot_i) +
   cowplot::draw_label("'Strong'\nEl Niño",
@@ -973,7 +977,9 @@ cowplot::ggdraw(plot_i) +
   cowplot::draw_label("Mean SST\n(2019–2023)",
                       #x = 0.91, y = 0.69,
                       x = 0.91, y = 0.68,
-                      hjust = 0, fontfamily = font_choose_graph, size = 10)
+                      hjust = 0, fontfamily = font_choose_graph, size = 10) +
+  theme(plot.background = element_rect(fill = "transparent", colour = NA),
+        panel.background = element_rect(fill = "transparent", colour = NA))
 
 ggsave("figs/04_case-studies/case-study_4gbe_1.pdf", height = 8, width = 11, bg = "transparent")
 
@@ -1018,8 +1024,8 @@ ggplot(data = data_f2) +
   labs(x = "Year",
        y = "Annual Bleaching Stress\nExtent (percent reefs)") +
   theme_graph() +
-  theme(panel.background = element_rect(fill = "white", colour = NA),
-        plot.background = element_rect(fill = "white", colour = NA),
+  theme(panel.background = element_rect(fill = "transparent", colour = NA),
+        plot.background = element_rect(fill = "transparent", colour = NA),
         panel.grid.major.x = element_line(colour = "grey85"),
         panel.grid.minor.x = element_line(colour = "grey92"),
         panel.grid.major.y = element_line(colour = "grey85"),
@@ -1028,7 +1034,8 @@ ggplot(data = data_f2) +
         legend.justification = c(0, 1),
         legend.direction = "vertical",
         legend.box = "vertical",
-        legend.background = element_blank(),
+        legend.background = element_rect(fill = "transparent", colour = NA),
+        legend.box.background = element_rect(fill = "transparent", colour = NA),
         legend.key = element_blank(),
         legend.spacing.y = unit(0.1, "cm"),
         legend.key.height = unit(0.5, "cm"),
@@ -1082,7 +1089,7 @@ plot_i <- ggplot() +
   geom_sf(data = i, fill = "#F2F2F2") +
   geom_sf(data = data_graticules, color = "white", linewidth = 1) +
   geom_sf(data = b, fill = NA, col = "#363737", linewidth = 0.4) +
-  geom_sf(data = site_cays, color = "white", fill = "#40A6AA", size = 9, shape = 23) +
+  geom_sf(data = site_cays, color = "white", fill = "#40A6AA", size = 12, shape = 23) +
   theme_minimal() +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),

@@ -23,7 +23,7 @@ load("data/model-results.RData")
 
 data_models_hc <- data_models |> 
   filter(category == "Hard coral" & level == "global") |> 
-  mutate(color = "#c44d56")
+  mutate(color = "#1A497C")
 
 data_languages <- tibble(language = c("EN",
                                       "SP",
@@ -57,7 +57,7 @@ plot_exsum_hc <- function(language_i){
     theme(panel.background = element_rect(fill = "transparent", colour = NA),
           plot.background = element_rect(fill = "transparent", colour = NA),
           plot.title = element_markdown(color = "black", size = 18, lineheight = 1.2),
-          plot.subtitle = element_markdown(color = "grey", size = 14)) +
+          plot.subtitle = element_markdown(color = "#4D4D4D", size = 14)) +
     scale_x_continuous(breaks = seq(1980, 2025, 5),
                        limits = c(1979, 2026),
                        labels = seq(1980, 2025, 5)) +
@@ -65,7 +65,7 @@ plot_exsum_hc <- function(language_i){
          title = unique(data_languages_i$title),
          subtitle = unique(data_languages_i$subtitle)) +
     annotate(geom = "label", x = 1995, y = 25, label = "-9.5%", size = 5, family = font_choose_graph,
-             fill = "#c44d56", color = "white")
+             fill = "#1A497C", color = "white")
   
   ggsave(paste0("figs/01_ex-summ/hard-coral_", str_to_lower(language_i), "_raw.pdf"), height = 6, width = 9)
   
@@ -81,7 +81,7 @@ map(unique(data_languages$language), ~plot_exsum_hc(language_i = .x))
 
 data_models_ma <- data_models |> 
   filter(category == "Macroalgae" & level == "global") |> 
-  mutate(color = "#03a678")
+  mutate(color = "#40A6AA")
 
 data_languages <- tibble(language = c("EN",
                                       "SP",
@@ -115,7 +115,7 @@ plot_exsum_ma <- function(language_i){
     theme(panel.background = element_rect(fill = "transparent", colour = NA),
           plot.background = element_rect(fill = "transparent", colour = NA),
           plot.title = element_markdown(color = "black", size = 18, lineheight = 1.2),
-          plot.subtitle = element_markdown(color = "grey", size = 14)) +
+          plot.subtitle = element_markdown(color = "#4D4D4D", size = 14)) +
     scale_x_continuous(breaks = seq(1980, 2025, 5),
                        limits = c(1979, 2026),
                        labels = seq(1980, 2025, 5)) +
@@ -124,7 +124,7 @@ plot_exsum_ma <- function(language_i){
          title = unique(data_languages_i$title),
          subtitle = unique(data_languages_i$subtitle)) +
     annotate(geom = "label", x = 1990, y = 7, label = "+44.1%", size = 5, family = font_choose_graph,
-             fill = "#03a678", color = "white")
+             fill = "#40A6AA", color = "white")
   
   ggsave(paste0("figs/01_ex-summ/macroalgae_", str_to_lower(language_i), "_raw.pdf"), height = 6, width = 9)
   
@@ -140,17 +140,17 @@ map(unique(data_languages$language), ~plot_exsum_ma(language_i = .x))
 
 pal <- colorRampPalette(c("#C44D56", "#E6E6E6", "#013C5E"))(101)
 
-data_arrow <- tibble(region = c("Australia", "Brazil", "Caribbean", "EAS", "ETP", "Pacific", "RSGA", "ROPME", "South Asia", "WIO"),
-                     position = c("Bottom", "Bottom", "Top", "Top", "Bottom", "Bottom", "Top", "Top", "Top", "Bottom"),
+data_arrow <- tibble(region = c("Australia", "Brazil", "Caribbean", "EAS", "ETP", "Pacific", "RSGA", "ROPME", "South Asia", "WIO", "Global"),
+                     position = c("Bottom", "Bottom", "Top", "Top", "Bottom", "Bottom", "Top", "Top", "Top", "Bottom", "Bottom"),
                      x = 1,
                      y = 1,
-                     change = c(-10.9, 0, -43.4, 0, 0, -18.3, -12.5, -48.7, 16.2, 31.0),
+                     change = c(-10.9, 0, -43.4, 0, 0, -18.3, -12.5, -48.7, 16.2, 31.0, -9.5),
                      color = pal[pmax(1, pmin(101, round(change) + 51))],
-                     change_label = case_when(change == 0 ~ "No change",
+                     change_label = case_when(change == 0 ~ "NC",
                                               change < 0 ~ paste0(change, "%"),
                                               change > 0 ~ paste0("+", change, "%"))) |> 
   mutate(angle = 90 * change / 100,
-         length = 0.2,
+         length = 0.5,
          xstart = x - length * cos(angle * pi / 180),
          ystart = y - length * sin(angle * pi / 180),
          xend = x + length * cos(angle * pi / 180),
@@ -257,12 +257,26 @@ plot_arrow <- function(region_i){
   ggsave(paste0("figs/01_ex-summ/arrow_", str_replace_all(str_to_lower(region_i), " ", "-"), ".png"),
          bg = "transparent", height = 3, width = 3)
   
+  plot_i <- ggplot(data = data_arrow |> filter(region == region_i)) +
+    geom_point(aes(x = x, y = y), size = 35, shape = 21, color = "white", fill = "#0C2F3B") +
+    geom_segment(aes(x = xstart, y = ystart, xend = x, yend = y), color = "white",
+                 linewidth = 1) +
+    geom_segment(aes(x = x, y = y, xend = xend, yend = yend), color = "white",
+                 linewidth = 1, arrow = arrow(length = unit(0.4, "cm"), type = "closed", angle = 25)) +
+    geom_text(aes(x = x, y = y, label = change_label), family = font_choose_graph, size = 10, nudge_x = 0.9, hjust = 0) +
+    scale_x_continuous(limits = c(0.5,3.2), expand = expansion(mult = 0)) +
+    scale_y_continuous(limits = c(0,2), expand = expansion(mult = 0)) +
+    coord_equal(clip = "off") +
+    theme_void() +
+    theme(legend.position = "none",
+          plot.margin = margin(0, 0, 0, 0))
+  
   ggsave(paste0("figs/02_part-1/fig_arrow-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
-         bg = "transparent", height = 3, width = 3)
+         bg = "transparent", height = 1.5, width = 2.5)
   
 }
 
-walk(unique(data_region$region), ~plot_arrow(region_i = .x))
+walk(unique(data_arrow$region), ~plot_arrow(region_i = .x))
 
 # 7. Figure 4 - Future trajectories ----
 
