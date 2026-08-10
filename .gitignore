@@ -35,6 +35,7 @@ code/e01_generate_docx.R
 code/e02_authors-contribution.R
 code/e03_authors-affiliation.R
 code/e04_generate-qr-code.R
+code/e05_data-zenodo.R
 code/function/docx_chapter.Rmd
 code/function/docx_supp-mat.Rmd
 code/function/styles.docx

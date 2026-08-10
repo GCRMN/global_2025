@@ -64,7 +64,9 @@ plot_trends_model(level_i = "global", range = "full", category_i = "Macroalgae")
 data_weights <- read.csv("figs/08_text-gen/reefs_extent.csv") %>% 
   filter(subregion == "All") %>% 
   select(region, reef_extent_rel_world) %>% 
-  mutate(reef_extent_rel_world = round(reef_extent_rel_world, 1))
+  mutate(reef_extent_rel_world = round(reef_extent_rel_world, 1),
+         reef_extent_shape = case_when(reef_extent_rel_world < 4 ~ 1.5,
+                                       TRUE ~ reef_extent_rel_world))
 
 plot_donut_weights <- function(region_i){
   
@@ -72,16 +74,25 @@ plot_donut_weights <- function(region_i){
     mutate(color = case_when(region == region_i ~ "#013C5E",
                              TRUE ~ "grey"))
   
+  value_i <- data_weights |> 
+    filter(region == region_i) |> 
+    mutate(reef_extent_rel_world = paste0(round(reef_extent_rel_world[1], 1), "%")) |> 
+    pull(reef_extent_rel_world)
+  
   ggplot() +
-    geom_bar(data = data_i, aes(x = 2, y = reef_extent_rel_world, fill = color, group = 1),
-             stat = "identity", width = 1, show.legend = FALSE, color = "white", linewidth = 1) +
+    geom_bar(data = data_i, aes(x = 2, y = reef_extent_shape, fill = color, group = 1),
+             stat = "identity", width = 1, show.legend = FALSE, color = "white", linewidth = 0.2) +
+    annotate(geom = "text", x = 2.5, y = 100/4, label = value_i,
+             family = font_choose_graph, size = 10, hjust = 0) +
     scale_fill_identity() +
-    coord_polar(theta = "y") +
+    coord_polar(theta = "y", clip = "off") +
     xlim(0.5, 2.5) + # Create the hole of the donut
-    theme_void()
+    theme_void() +
+    theme(legend.position = "none",
+          plot.margin = margin(0, 120, 0, 0))
   
   ggsave(paste0("figs/02_part-1/fig_weight-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
-         height = 4, width = 4, bg = "transparent")
+         bg = "transparent", height = 1, width = 2.5)
   
 }
 
@@ -92,21 +103,44 @@ map(data_weights$region, ~plot_donut_weights(region_i = .x))
 data_models2 <- data_models %>% 
   filter(category == "Hard coral" & level %in% c("global", "region")) %>% 
   filter(year >= first_year & year <= last_year) %>% 
-  mutate(color = case_when(year <= 2009 ~ "#C44D56",
+  mutate(color = case_when(year <= 2009 ~ "#40A6AA",
                            year > 2009 & year < 2020 ~ "grey",
-                           year >= 2020 ~ "#013C5E"),
+                           year >= 2020 ~ "#1A497C"),
          region = ifelse(is.na(region), "global", region))
+
+data_periods <- data_models2 |> 
+  filter(category == "Hard coral") |> 
+  group_by(region) |> 
+  summarise(year_reference = min(year),
+            year_present = max(year)) |> 
+  ungroup()
+
+data_periods <- tibble(region = c("global", "Australia", "Caribbean", "Pacific",
+                                  "EAS", "South Asia", "ETP", "WIO", "ROPME", "Brazil", "RSGA"),
+                       reference = c(30.2, 30.2, 19.5, 34.5, 30.5, 30.1, 24.0, 21.7, 34.9, 19.1, 32.9),
+                       present = c(27.3, 26.8, 11.0, 28.2, 30.7, 35.0, 25.1, 31.0, 17.8, 18.8, 28.8)) |> 
+  pivot_longer(2:3, values_to = "mean", names_to = "period") |> 
+  mutate(color = case_when(period == "reference" ~ "#40A6AA",
+                           period == "present" ~ "#1A497C")) |> 
+  left_join(data_periods)
 
 plot_trends_periods <- function(region_i){
   
   ggplot() +
     geom_line(data = data_models2 %>% filter(region == region_i),
-              aes(x = year, y = mean), color = "grey", linewidth = 10) +
-    geom_line(data = data_models2 %>% filter(region == region_i & color == "#C44D56"),
-              aes(x = year, y = mean, color = color), linewidth = 10) +
-    geom_line(data = data_models2 %>% filter(region == region_i & color == "#013C5E"),
-              aes(x = year, y = mean, color = color), linewidth = 10) +
-    scale_x_continuous(limits = c(1980, 2025)) +
+              aes(x = year, y = mean), color = "grey", linewidth = 8) +
+    geom_line(data = data_models2 %>% filter(region == region_i & color == "#40A6AA"),
+              aes(x = year, y = mean, color = color), linewidth = 8) +
+    geom_line(data = data_models2 %>% filter(region == region_i & color == "#1A497C"),
+              aes(x = year, y = mean, color = color), linewidth = 8) +
+    geom_text(data = data_periods %>% filter(region == region_i & period == "reference"),
+              aes(x = year_reference, y = mean, color = color, label = sprintf("%.1f%%", mean)), 
+              nudge_x = -2, hjust = 1, size = 22, family = font_choose_graph) +
+    geom_text(data = data_periods %>% filter(region == region_i & period == "present"),
+              aes(x = year_present, y = mean, color = color, label = sprintf("%.1f%%", mean)),
+              nudge_x = 3, hjust = 0, size = 22, family = font_choose_graph) +
+    scale_x_continuous(expand = expansion(mult = c(0.7, 0.7))) +
+    scale_y_continuous(expand = expansion(mult = c(0.3, 0.3))) +
     scale_color_identity() +
     theme_void() +
     theme(axis.title = element_blank(),
@@ -119,7 +153,7 @@ plot_trends_periods <- function(region_i){
   
 }
 
-map(c(data_weights$region, "global"), ~plot_trends_periods(region_i = .x))
+walk(unique(data_models2$region), ~plot_trends_periods(region_i = .x))
 
 # 5. Figures for Part 2 ----
 

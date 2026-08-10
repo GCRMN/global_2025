@@ -150,7 +150,7 @@ data_arrow <- tibble(region = c("Australia", "Brazil", "Caribbean", "EAS", "ETP"
                                               change < 0 ~ paste0(change, "%"),
                                               change > 0 ~ paste0("+", change, "%"))) |> 
   mutate(angle = 90 * change / 100,
-         length = 1,
+         length = 0.2,
          xstart = x - length * cos(angle * pi / 180),
          ystart = y - length * sin(angle * pi / 180),
          xend = x + length * cos(angle * pi / 180),
@@ -171,7 +171,7 @@ polygon <- st_polygon(x = list(rbind(
   st_sfc() %>%
   st_set_crs(4326)
 
-data_countries <- st_read("data/01_maps/01_raw/03_natural-earth/ne_10m_land/ne_10m_land.shp")
+data_countries <- st_read("data/01_maps/01_raw/03_natural-earth/ne_110m_land/ne_110m_land.shp")
   
 data_countries <- st_crop(x = data_countries, 
                           y = st_as_sfc(st_bbox(c(xmin = -180, ymin = -48, xmax = 180, ymax = 48), crs = 4326))) %>%
@@ -256,6 +256,22 @@ plot_arrow <- function(region_i){
   
   ggsave(paste0("figs/01_ex-summ/arrow_", str_replace_all(str_to_lower(region_i), " ", "-"), ".png"),
          bg = "transparent", height = 3, width = 3)
+  
+  data_arrow <- tibble(region = c("Australia", "Brazil", "Caribbean", "EAS", "ETP", "Pacific", "RSGA", "ROPME", "South Asia", "WIO", "Global"),
+                       position = c("Bottom", "Bottom", "Top", "Top", "Bottom", "Bottom", "Top", "Top", "Top", "Bottom", "Bottom"),
+                       x = 1,
+                       y = 1,
+                       change = c(-10.9, 0, -43.4, 0, 0, -18.3, -12.5, -48.7, 16.2, 31.0, -9.5),
+                       color = pal[pmax(1, pmin(101, round(change) + 51))],
+                       change_label = case_when(change == 0 ~ "NC",
+                                                change < 0 ~ paste0(change, "%"),
+                                                change > 0 ~ paste0("+", change, "%"))) |> 
+    mutate(angle = 90 * change / 100,
+           length = 1,
+           xstart = x - length * cos(angle * pi / 180),
+           ystart = y - length * sin(angle * pi / 180),
+           xend = x + length * cos(angle * pi / 180),
+           yend = y + length * sin(angle * pi / 180))
   
   plot_i <- ggplot(data = data_arrow |> filter(region == region_i)) +
     geom_point(aes(x = x+1, y = y), size = 25, shape = 21, color = "white", fill = "#0C2F3B") +
