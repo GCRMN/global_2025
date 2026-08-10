@@ -29,7 +29,7 @@ plot_a <- ggplot() +
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         legend.background = element_rect(fill = "transparent", color = NA),
-        plot.title = element_text(hjust = 0, face = "bold"),
+        plot.title = element_text(hjust = 0),
         axis.text.y = element_text(hjust = 0.5)) +
   labs(title = "A")
 
@@ -62,7 +62,7 @@ plot_b <- ggplot() +
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         legend.background = element_rect(fill = "transparent", color = NA),
-        plot.title = element_text(hjust = 0, face = "bold"),
+        plot.title = element_text(hjust = 0),
         axis.text.y = element_text(hjust = 0.5)) +
   labs(title = "B")
 
@@ -74,4 +74,4 @@ plot_a + plot_b &
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
         panel.background = element_rect(fill = "transparent", colour = NA))
 
-ggsave("figs/05_methods/fig-voronoi-grid.png", height = 4.5, width = 9.5, bg = "transparent", dpi = 300)
+ggsave("figs/05_methods/fig-voronoi-grid.png", height = 6, width = 12.7, bg = "transparent", dpi = 200)

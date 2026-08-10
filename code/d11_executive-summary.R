@@ -150,7 +150,7 @@ data_arrow <- tibble(region = c("Australia", "Brazil", "Caribbean", "EAS", "ETP"
                                               change < 0 ~ paste0(change, "%"),
                                               change > 0 ~ paste0("+", change, "%"))) |> 
   mutate(angle = 90 * change / 100,
-         length = 0.5,
+         length = 1,
          xstart = x - length * cos(angle * pi / 180),
          ystart = y - length * sin(angle * pi / 180),
          xend = x + length * cos(angle * pi / 180),
@@ -258,21 +258,20 @@ plot_arrow <- function(region_i){
          bg = "transparent", height = 3, width = 3)
   
   plot_i <- ggplot(data = data_arrow |> filter(region == region_i)) +
-    geom_point(aes(x = x, y = y), size = 35, shape = 21, color = "white", fill = "#0C2F3B") +
-    geom_segment(aes(x = xstart, y = ystart, xend = x, yend = y), color = "white",
-                 linewidth = 1) +
-    geom_segment(aes(x = x, y = y, xend = xend, yend = yend), color = "white",
-                 linewidth = 1, arrow = arrow(length = unit(0.4, "cm"), type = "closed", angle = 25)) +
-    geom_text(aes(x = x, y = y, label = change_label), family = font_choose_graph, size = 10, nudge_x = 0.9, hjust = 0) +
-    scale_x_continuous(limits = c(0.5,3.2), expand = expansion(mult = 0)) +
+    geom_point(aes(x = x+1, y = y), size = 25, shape = 21, color = "white", fill = "#0C2F3B") +
+    geom_segment(aes(x = xstart+1, y = ystart, xend = x+1, yend = y), color = "white", linewidth = 1) +
+    geom_segment(aes(x = x+1, y = y, xend = xend+1, yend = yend), color = "white",
+                 linewidth = 1, arrow = arrow(length = unit(0.3, "cm"), type = "closed", angle = 25)) +
+    geom_text(aes(x = x, y = y, label = change_label), family = font_choose_graph, size = 10, nudge_x = 3, hjust = 0) +
+    scale_x_continuous(limits = c(0,4), expand = expansion(mult = 0)) +
     scale_y_continuous(limits = c(0,2), expand = expansion(mult = 0)) +
     coord_equal(clip = "off") +
     theme_void() +
     theme(legend.position = "none",
-          plot.margin = margin(0, 0, 0, 0))
+          plot.margin = margin(0, 120, 0, 0))
   
   ggsave(paste0("figs/02_part-1/fig_arrow-", str_replace_all(str_to_lower(region_i), " ", "-"), ".pdf"),
-         bg = "transparent", height = 1.5, width = 2.5)
+         bg = "transparent", height = 1, width = 2.5)
   
 }
 
@@ -358,3 +357,100 @@ plot_exsum_trajectories <- function(language_i){
 }
 
 map(unique(data_languages$language), ~plot_exsum_trajectories(language_i = .x))
+
+# 8. Global map of GCRMN regions ----
+
+## 8.1 Load data ----
+
+crs_pacific <- "+proj=eqearth +lon_0=160 +datum=WGS84 +units=m +no_defs"
+
+data_land <- st_read("data/01_maps/01_raw/03_natural-earth/ne_110m_land/ne_110m_land.shp") %>% 
+  st_transform(4326) %>%
+  st_break_antimeridian(lon_0 = 160) %>%
+  st_transform(crs = crs_pacific)
+
+data_graticules <- st_read("data/01_maps/01_raw/03_natural-earth/ne_10m_graticules_20/ne_10m_graticules_20.shp") %>% 
+  st_transform(4326) %>%
+  st_break_antimeridian(lon_0 = 160) %>%
+  st_transform(crs = crs_pacific)
+
+data_regions <- st_read("data/01_maps/02_clean/03_regions/gcrmn_regions.shp") %>% 
+  st_transform(4326) %>%
+  st_break_antimeridian(lon_0 = 160) %>%
+  st_transform(crs = crs_pacific)
+
+# Merge the Pacific polygons
+data_pacific <- data_regions %>%
+  filter(region == "Pacific") %>%
+  st_buffer(1000) %>%
+  summarise(region = "Pacific",
+            geometry = st_union(geometry)) %>%
+  st_buffer(-1000)
+
+# Recombine with all other regions
+data_regions <- data_regions %>%
+  filter(region != "Pacific") %>%
+  bind_rows(data_pacific)
+
+## 8.2 Create the border of background map ----
+
+lon_min <- -20 + 0.001
+lon_max <- 340 - 0.001
+
+lon_seq <- seq(lon_min, lon_max, length.out = 1000)
+
+border_coords <- rbind(
+  
+  # Bottom edge
+  cbind(lon_seq, -89.999),
+  
+  # Right edge
+  cbind(lon_max, seq(-89.999, 89.999, length.out = 500)),
+  
+  # Top edge
+  cbind(rev(lon_seq), 89.999),
+  
+  # Left edge
+  cbind(lon_min, seq(89.999, -89.999, length.out = 500))
+)
+
+border_coords <- rbind(
+  border_coords,
+  border_coords[1, ]
+)
+
+background_map_border <- border_coords %>%
+  st_linestring() %>%
+  st_sfc(crs = 4326) %>%
+  st_transform(crs_pacific)
+
+## 8.3 Create the plot ----
+
+ggplot() +
+  geom_sf(data = data_graticules, color = "#ecf0f1", linewidth = 0.25) +
+  geom_sf(data = background_map_border, fill = NA, color = "grey30", linewidth = 0.25) +
+  geom_sf(data = data_regions, aes(fill = region), color = "white", show.legend = FALSE, linewidth = 0.3) +
+  scale_fill_manual(values = c("Australia" = "#0C2F3B",
+                               "Brazil" = "#40A6AA",
+                               "Caribbean" = "#31BDEA",
+                               "EAS" = "#40A6AA",
+                               "ETP" = "#0C2F3B",
+                               "Pacific" = "#1A497C",
+                               "ROPME" = "#40A6AA",
+                               "PERSGA" = "#31BDEA",
+                               "South Asia" = "#0C2F3B",
+                               "WIO" = "#1A497C")) +
+  geom_sf(data = data_land, color = "#24252a", fill = "#dadfe1") +
+  theme(text = element_text(family = font_choose_graph),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        legend.position = "bottom",
+        legend.background = element_rect(fill = "transparent", color = NA),
+        legend.title = element_blank(),
+        panel.background = element_blank(),
+        plot.background = element_rect(fill = "transparent", color = NA)) +
+  guides(fill = guide_legend(override.aes = list(size = 5, color = NA)))
+
+ggsave("figs/00_misc/global-map-regions.png", bg = "transparent", height = 4, width = 8, dpi = 300)
+
+ggsave("figs/00_misc/global-map-regions_raw.pdf", bg = "transparent", height = 4, width = 8)
