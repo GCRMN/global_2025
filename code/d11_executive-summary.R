@@ -37,7 +37,7 @@ data_languages <- tibble(language = c("EN",
                          title = c("Changes in <span style='color:#FFFFFF'>hard coral cover</span> at the global<br>scale from 1980 to 2024",
                                    "Cambio en la cobertura de <span style='color:#FFFFFF'>coral pétreo</span> a escala<br>mundial entre 1980 y 2024",
                                    "Évolution du recouvrement en <span style='color:#FFFFFF'>coraux durs</span> à l'échelle<br>mondiale de 1980 à 2024"),
-                         subtitle = c("The bold line represents the median, while the<br>ribbons indicate the credible intervals at 95%",
+                         subtitle = c("The bold line represents the median, while the<br>ribbon indicates the 95% credible interval",
                                       "La línea gruesa representa la mediana, mientras que las<br>bandas indican los intervalos creíbles al 95 %",
                                       "La ligne en gras représente la médiane, tandis que les bandes<br>indiquent les intervalles de crédibilité à 95 %"))
 
@@ -63,9 +63,9 @@ plot_exsum_hc <- function(language_i){
                        labels = seq(1980, 2025, 5)) +
     labs(x = unique(data_languages_i$x_axis), y = unique(data_languages_i$y_axis),
          title = unique(data_languages_i$title),
-         subtitle = unique(data_languages_i$subtitle)) +
-    annotate(geom = "label", x = 1995, y = 25, label = "-9.5%", size = 5, family = font_choose_graph,
-             fill = "#1A497C", color = "white")
+         subtitle = unique(data_languages_i$subtitle))# +
+    #annotate(geom = "label", x = 1995, y = 25, label = "-9.5%", size = 5, family = font_choose_graph,
+    #         fill = "#1A497C", color = "white")
   
   ggsave(paste0("figs/01_ex-summ/hard-coral_", str_to_lower(language_i), "_raw.pdf"), height = 6, width = 9)
   
@@ -95,7 +95,7 @@ data_languages <- tibble(language = c("EN",
                          title = c("Changes in <span style='color:#FFFFFF'>macroalgal cover</span> at the global<br>scale from 1980 to 2024",
                                    "Cambio en la cobertura de <span style='color:#FFFFFF'>macroalgas</span> a escala<br>mundial entre 1980 y 2024",
                                    "Évolution du recouvrement en <span style='color:#FFFFFF'>macroalgues</span> à l'échelle<br>mondiale de 1980 à 2024"),
-                         subtitle = c("The bold line represents the median, while the<br>ribbons indicate the credible intervals at 95%",
+                         subtitle = c("The bold line represents the median, while the<br>ribbon indicates the 95% credible interval.",
                                       "La línea gruesa representa la mediana, mientras que las<br>bandas indican los intervalos creíbles al 95 %",
                                       "La ligne en gras représente la médiane, tandis que les bandes<br>indiquent les intervalles de crédibilité à 95 %"))
 
@@ -122,9 +122,9 @@ plot_exsum_ma <- function(language_i){
     scale_y_continuous(limits = c(3, 9)) +
     labs(x = unique(data_languages_i$x_axis), y = unique(data_languages_i$y_axis),
          title = unique(data_languages_i$title),
-         subtitle = unique(data_languages_i$subtitle)) +
-    annotate(geom = "label", x = 1990, y = 7, label = "+44.1%", size = 5, family = font_choose_graph,
-             fill = "#40A6AA", color = "white")
+         subtitle = unique(data_languages_i$subtitle))# +
+    #annotate(geom = "label", x = 1990, y = 7, label = "+44.1%", size = 5, family = font_choose_graph,
+    #         fill = "#40A6AA", color = "white")
   
   ggsave(paste0("figs/01_ex-summ/macroalgae_", str_to_lower(language_i), "_raw.pdf"), height = 6, width = 9)
   
