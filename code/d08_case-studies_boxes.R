@@ -179,12 +179,15 @@ ggsave("figs/04_case-studies/case-study_ropme.png", height = 5.5, width = 10.5, 
 
 ## 4.1 Load and transform data ----
 
+color_2020 <- "#1A497C"
+color_2025 <- "#0C2F3B"
+
 load("data/model-results.RData")
 
 data_2025 <- data_models %>% 
   filter(level %in% c("global", "region") & category == "Hard coral") %>% 
   mutate(source = "2025 GCRMN report",
-         color = "#40A6AA") %>% 
+         color = color_2025) %>% 
   select(source, level, region, category, year, mean, lower_ci_80, upper_ci_80, lower_ci_95, upper_ci_95, color)
 
 data_2020 <- read.csv("../../2025-08-25_time-series/time_series/data/gcrmn_global_2021/ModelledTrends.all.sum.csv") %>% 
@@ -197,7 +200,7 @@ data_2020 <- read.csv("../../2025-08-25_time-series/time_series/data/gcrmn_globa
          region = str_replace_all(region, c("East Asia" = "EAS",
                                             "Global" = NA_character_)),
          source = "2020 GCRMN report",
-         color = "#1A497C") %>% 
+         color = color_2020) %>% 
   filter(category == "Hard coral") %>% 
   select(source, level, region, category, year, mean, lower_ci_80, upper_ci_80, lower_ci_95, upper_ci_95, color)
 
@@ -217,9 +220,9 @@ plot_a <- ggplot(data = data_trends %>% filter(level == "global"), aes(x = year,
         panel.background = element_rect(fill = "transparent", colour = NA),
         plot.background = element_rect(fill = "transparent", colour = NA)) +
   annotate("label", x = 2002, y = 24, label = "2025 GCRMN report",
-           family = font_choose_graph, fill = "#40A6AA", color = "white") +
+           family = font_choose_graph, fill = color_2025, color = "white") +
   annotate("label", x = 2015, y = 37.5, label = "2020 GCRMN report",
-           family = font_choose_graph, fill = "#1A497C", color = "white") +
+           family = font_choose_graph, fill = color_2020, color = "white") +
   labs(x = "Year", y = "Hard coral cover (%)", title = "A")
 
 ggplot(data = data_trends %>% filter(level == "region"), aes(x = year, fill = color, color = color, group  = source)) +
@@ -267,8 +270,8 @@ data_sites_2020 <- read.csv2("data/02_misc/03-merge_all_all_all_benthos_NA.csv")
   mutate(report = "report 2020")
 
 data_sites <- bind_rows(data_sites_2020, data_sites_2025) %>% 
-  mutate(color = case_when(report == "report 2025" ~ "#40A6AA",
-                           report == "report 2020" ~ "#1A497C"))
+  mutate(color = case_when(report == "report 2025" ~ color_2025,
+                           report == "report 2020" ~ color_2020))
 
 plot_b <- ggplot(data = data_sites %>% filter(report == "report 2020"),
                  aes(x = year, y = n, fill = color)) +
@@ -306,7 +309,8 @@ plot_a + (plot_b / plot_c) + plot_layout(widths = c(2.5, 1)) &
 ggsave("figs/04_case-studies/case-study_2020-2025.png", width = 9, height = 5)
 ggsave("figs/04_case-studies/case-study_2020-2025.pdf", width = 9, height = 5)
 
-rm(data_models, data_2020, data_2025, data_sites_2020, data_sites_2025, data_sites)
+rm(data_models, data_2020, data_2025, data_sites_2020, data_sites_2025, data_sites,
+   color_2025, color_2020)
 
 # 5. Box absolute vs relative values ----
 
@@ -351,7 +355,7 @@ ggsave("figs/04_case-studies/case-study_abs-rel.pdf", width = 8, height = 4)
 data_turf_length <- read.csv("data/14_case-studies/b_TurfLength.csv")
 
 plot_b <- ggplot(data = data_turf_length, aes(x = TurfLength.mm.)) +
-  geom_density(fill = "#486D96", color = "#0C2F3B") +
+  geom_density(fill = "#1A497C", color = "#0C2F3B") +
   theme_graph() +
   theme(plot.background = element_rect(fill = "transparent", colour = NA),
         panel.background = element_rect(fill = "transparent", colour = NA)) +
@@ -362,12 +366,12 @@ plot_b <- ggplot(data = data_turf_length, aes(x = TurfLength.mm.)) +
   annotate("segment", x = 20.75, y = 0.2175, xend = 24, yend = 0.2175,
            arrow = arrow(length = unit(0.015, "npc")), color = "#576574") +
   annotate("text", x = 20, y = 0.2275, label = "Turf algae", hjust = 1.2,
-           color = "#486D96", family = font_choose_graph, size = 4) +
+           color = "#1A497C", family = font_choose_graph, size = 4) +
   annotate("segment", x = 19.25, y = 0.2175, xend = 16, yend = 0.2175,
            arrow = arrow(length = unit(0.015, "npc")), color = "#576574") +
   annotate("segment", y = 0, yend = 0.21, x = 3, xend = 3, colour = "black", linetype = "dashed", linewidth = 0.2) +
   annotate("text", x = 3, y = 0.2075, label = "LSATs", hjust = -0.2,
-           color = "#486D96", family = font_choose_graph, size = 4) +
+           color = "#1A497C", family = font_choose_graph, size = 4) +
   annotate("segment", x = 3.5, y = 0.20, xend = 5.5, yend = 0.20,
            arrow = arrow(length = unit(0.015, "npc")), color = "#576574") +
   annotate("text", x = 3, y = 0.2075, label = "SPATs", hjust = 1.2,
@@ -385,7 +389,7 @@ ggsave("figs/04_case-studies/case-study_turf_plot-b.pdf", width = 6, height = 5)
 data_turf_sed <- read.csv("data/14_case-studies/c_TurfVsSediment.csv")
 
 plot_c <- ggplot(data = data_turf_sed, aes(x = TurfLength.mm., y = SedimentLoad.g_m2.)) +
-  geom_point(color = "#486D96") +
+  geom_point(color = "#1A497C") +
   scale_x_log10() +
   scale_y_log10() +
   geom_smooth(method = "lm", se = FALSE, color = "#0C2F3B") +

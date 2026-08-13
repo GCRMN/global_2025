@@ -291,9 +291,9 @@ plot_b <- ggplot(data = data_oni, aes(x = date, y = oni)) +
   geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni < 1.5, 1.5, oni)),
               aes(x = date, ymin = 1.5, ymax = oni), fill = "#1A497C", alpha = 1) +
   geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -0.5, -0.5, oni)),
-              aes(x = date, ymin = -0.5, ymax = oni), fill = "#40A6AA", alpha = 0.5) +
+              aes(x = date, ymin = -0.5, ymax = oni), fill = "#1A497C", alpha = 0.5) +
   geom_ribbon(data = data_oni %>% mutate(oni = if_else(oni > -1.5, -1.5, oni)),
-              aes(x = date, ymin = -1.5, ymax = oni), fill = "#40A6AA", alpha = 1) +
+              aes(x = date, ymin = -1.5, ymax = oni), fill = "#1A497C", alpha = 1) +
   geom_path(linewidth = 0.2) +
   scale_x_date(limits = as.Date(c("1983-01-01", "2025-12-31")), date_breaks = "5 years", date_labels = "%Y") +
   theme_graph() +

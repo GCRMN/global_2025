@@ -261,10 +261,11 @@ plot_arrow <- function(region_i){
                        position = c("Bottom", "Bottom", "Top", "Top", "Bottom", "Bottom", "Top", "Top", "Top", "Bottom", "Bottom"),
                        x = 1,
                        y = 1,
-                       change = c(-10.9, 0, -43.4, 0, 0, -18.3, -12.5, -48.7, 16.2, 31.0, -9.5),
+                       change = c(-10.9, 0, -43.4, 0, 0, -18.3, -12.5, -48.7, 16.2, 43.0, -9.5),
                        color = pal[pmax(1, pmin(101, round(change) + 51))],
                        change_label = case_when(change == 0 ~ "NC",
                                                 change < 0 ~ paste0(change, "%"),
+                                                change > 0 & region == "WIO" ~ paste0("+", change, "%*"),
                                                 change > 0 ~ paste0("+", change, "%"))) |> 
     mutate(angle = 90 * change / 100,
            length = 1,
@@ -452,9 +453,9 @@ ggplot() +
                                "EAS" = "#40A6AA",
                                "ETP" = "#0C2F3B",
                                "Pacific" = "#1A497C",
-                               "ROPME" = "#40A6AA",
-                               "PERSGA" = "#31BDEA",
-                               "South Asia" = "#0C2F3B",
+                               "ROPME" = "#0C2F3B",
+                               "PERSGA" = "#40A6AA",
+                               "South Asia" = "#31BDEA",
                                "WIO" = "#1A497C")) +
   geom_sf(data = data_land, color = "#24252a", fill = "#dadfe1") +
   theme(text = element_text(family = font_choose_graph),
@@ -467,6 +468,6 @@ ggplot() +
         plot.background = element_rect(fill = "transparent", color = NA)) +
   guides(fill = guide_legend(override.aes = list(size = 5, color = NA)))
 
-ggsave("figs/00_misc/global-map-regions.png", bg = "transparent", height = 4, width = 8, dpi = 300)
+ggsave("figs/00_misc/fig_map-regions_raw.png", bg = "transparent", height = 4, width = 8, dpi = 300)
 
-ggsave("figs/00_misc/global-map-regions_raw.pdf", bg = "transparent", height = 4, width = 8)
+ggsave("figs/00_misc/fig_map-regions_raw.pdf", bg = "transparent", height = 4, width = 8)

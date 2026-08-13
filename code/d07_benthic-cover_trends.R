@@ -71,12 +71,12 @@ data_weights <- read.csv("figs/08_text-gen/reefs_extent.csv") %>%
 plot_donut_weights <- function(region_i){
   
   data_i <- data_weights %>% 
-    mutate(color = case_when(region == region_i ~ "#013C5E",
+    mutate(color = case_when(region == region_i ~ "#0C2F3B",
                              TRUE ~ "grey"))
   
   value_i <- data_weights |> 
     filter(region == region_i) |> 
-    mutate(reef_extent_rel_world = paste0(round(reef_extent_rel_world[1], 1), "%")) |> 
+    mutate(    reef_extent_rel_world = sprintf("%.1f%%", reef_extent_rel_world[1])) |> 
     pull(reef_extent_rel_world)
   
   ggplot() +
@@ -103,7 +103,7 @@ map(data_weights$region, ~plot_donut_weights(region_i = .x))
 data_models2 <- data_models %>% 
   filter(category == "Hard coral" & level %in% c("global", "region")) %>% 
   filter(year >= first_year & year <= last_year) %>% 
-  mutate(color = case_when(year <= 2009 ~ "#40A6AA",
+  mutate(color = case_when(year <= 2009 ~ "#0C2F3B",
                            year > 2009 & year < 2020 ~ "grey",
                            year >= 2020 ~ "#1A497C"),
          region = ifelse(is.na(region), "global", region))
@@ -120,7 +120,7 @@ data_periods <- tibble(region = c("global", "Australia", "Caribbean", "Pacific",
                        reference = c(30.2, 30.2, 19.5, 34.5, 30.5, 30.1, 24.0, 21.7, 34.9, 19.1, 32.9),
                        present = c(27.3, 26.8, 11.0, 28.2, 30.7, 35.0, 25.1, 31.0, 17.8, 18.8, 28.8)) |> 
   pivot_longer(2:3, values_to = "mean", names_to = "period") |> 
-  mutate(color = case_when(period == "reference" ~ "#40A6AA",
+  mutate(color = case_when(period == "reference" ~ "#0C2F3B",
                            period == "present" ~ "#1A497C")) |> 
   left_join(data_periods)
 
@@ -129,7 +129,7 @@ plot_trends_periods <- function(region_i){
   ggplot() +
     geom_line(data = data_models2 %>% filter(region == region_i),
               aes(x = year, y = mean), color = "grey", linewidth = 8) +
-    geom_line(data = data_models2 %>% filter(region == region_i & color == "#40A6AA"),
+    geom_line(data = data_models2 %>% filter(region == region_i & color == "#0C2F3B"),
               aes(x = year, y = mean, color = color), linewidth = 8) +
     geom_line(data = data_models2 %>% filter(region == region_i & color == "#1A497C"),
               aes(x = year, y = mean, color = color), linewidth = 8) +
