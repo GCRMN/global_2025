@@ -180,7 +180,7 @@ ggsave("figs/04_case-studies/case-study_ropme.png", height = 5.5, width = 10.5, 
 ## 4.1 Load and transform data ----
 
 color_2020 <- "#1A497C"
-color_2025 <- "#0C2F3B"
+color_2025 <- "#40A6AA"
 
 load("data/model-results.RData")
 

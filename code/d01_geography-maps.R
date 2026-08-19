@@ -91,12 +91,12 @@ polygon <- st_polygon(x = list(rbind(
   st_set_crs(4326)
 
 data_countries <- st_crop(x = data_countries, 
-                     y = st_as_sfc(st_bbox(c(xmin = -180, ymin = -48, xmax = 180, ymax = 48), crs = 4326))) %>%
+                          y = st_as_sfc(st_bbox(c(xmin = -180, ymin = -48, xmax = 180, ymax = 48), crs = 4326))) %>%
   st_difference(polygon) %>%
   st_transform(crs = crs_selected)
 
 data_region <- read_sf("data/01_maps/02_clean/03_regions/gcrmn_regions.shp")
-  
+
 data_region_pac <- data_region %>% 
   filter(region == "Pacific") %>% 
   st_difference(polygon) %>% 
@@ -162,7 +162,7 @@ plot_donutchart <- function(region_i){
     left_join(., palette_regions) %>% 
     mutate(color = case_when(region == region_i ~ color,
                              TRUE ~ "#b2bec3"))
-
+  
   data_order <- data_reef_extent %>%
     arrange(desc(reef_extent_rel_world)) %>%
     pull(region)

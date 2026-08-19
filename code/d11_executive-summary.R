@@ -5,7 +5,6 @@ library(patchwork)
 library(ggtext)
 library(sf)
 sf_use_s2(FALSE)
-library(patchwork)
 library(colorspace)
 
 # 2. Source functions ----
@@ -235,6 +234,66 @@ plot_spacer() + plot_map + plot_spacer() +
 ggsave("figs/01_ex-summ/map_regions_raw.png", bg = "transparent", height = 6, width = 9, dpi = 300)
 
 ggsave("figs/01_ex-summ/map_regions_raw.pdf", bg = "transparent", height = 6, width = 9)
+
+if(FALSE){
+
+## 6.2 Make the map (full) ----
+
+  data_land <- st_read("data/01_maps/01_raw/03_natural-earth/ne_110m_land/ne_110m_land.shp")
+  
+  crs_selected <- st_crs("+proj=eqc +x_0=0 +y_0=0 +lat_0=0 +lon_0=160")
+  
+  offset <- 180 - 160
+  
+  polygon <- st_polygon(x = list(rbind(
+    c(-0.0001 - offset, 90),
+    c(0 - offset, 90),
+    c(0 - offset, -90),
+    c(-0.0001 - offset, -90),
+    c(-0.0001 - offset, 90)))) %>%
+    st_sfc() %>%
+    st_set_crs(4326)
+  
+  data_land <- data_land %>%
+    st_difference(polygon) %>%
+    st_simplify() %>%
+    st_collection_extract("POLYGON") %>%
+    st_cast("POLYGON", warn = FALSE) %>%
+    st_transform(crs = crs_selected) %>%
+    st_make_valid()
+
+  data_region <- st_read("data/01_maps/02_clean/03_regions/gcrmn_regions.shp")
+  
+  data_region_pac <- data_region %>% 
+    filter(region == "Pacific") %>% 
+    st_difference(polygon) %>% 
+    st_transform(crs = crs_selected)
+  
+  data_region_pac %<>% # Special pipe from magrittr
+    st_buffer(10) %>% # To join polygon (remove vertical line)
+    nngeo::st_remove_holes(.)
+  
+  data_region <- data_region %>% 
+    filter(region != "Pacific") %>% 
+    st_difference(polygon) %>% 
+    st_transform(crs = crs_selected) %>% 
+    bind_rows(., data_region_pac)
+  
+  plot_i <- ggplot() +
+    geom_sf(data = data_region, fill = "grey99") +
+    geom_sf(data = data_land, fill = "#2f3542", color = "#2f3542") +
+    coord_sf(expand = FALSE,
+             label_axes = list(top = "E", left = "N", right = "N", bottom = "E")) +
+    theme(panel.border = element_rect(fill = NA, color = "black"),
+          panel.background = element_rect(fill = "white"),
+          panel.grid = element_blank(),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          axis.ticks = element_blank(),
+          axis.text = element_blank())
+  
+  ggsave("figs/01_ex-summ/map_regions_full.svg", height = 9, width = 12, device = svglite::svglite, bg = "transparent")
+  
+}
 
 ## 6.3 Arrows ----
 
