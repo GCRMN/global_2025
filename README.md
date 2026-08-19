@@ -71,66 +71,137 @@ trends in benthic cover and associated outputs, are archived on
 
 ## 3. Code
 
+The [**`code`**](code) directory contains the scripts used to prepare
+and analyse the data and to generate the figures and tables presented in
+the report. Scripts are organised according to the main steps of the
+analytical workflow.
+
 ### Cleaning and selection (`a_`)
 
-- `a01_select_benthic-data.R` Extract benthic cover data from
+- [**`a01_select_benthic-data.R`**](code/a01_select_benthic-data.R)
+  Select and filter the benthic cover data used in the report from
   [gcrmndb_benthos](https://github.com/GCRMN/gcrmndb_benthos).
-- `a02_clean_intersect-reefs.R`
-- `a03_benthic-data_sources.R` Extract lists of datasetID and
-  contributors details.
-- `a04_clean_buffer-reefs.js` Create coral reef buffer polygons at 5,
-  20, 50, and 100 km using [GEE](https://earthengine.google.com/).
-- `a05_clean_cyclones.R` Clean cyclones data.
-- `a06_download_crw-year.R`
+- [**`a02_clean_intersect-reefs.R`**](code/a02_clean_intersect-reefs.R)
+  Intersect the global coral reef distribution with GCRMN subregions to
+  produce the reef spatial layer used in subsequent analyses.
+- [**`a03_benthic-data_sources.R`**](code/a03_benthic-data_sources.R)
+  Compile dataset sources, datasetIDs, contributor information,
+  acknowledgements, and citations used in the report and supplementary
+  materials.
+- [**`a04_clean_buffer-reefs.js`**](code/a04_clean_buffer-reefs.js)
+  Create 5, 20, 50, and 100 km buffers around coral reefs using Google
+  Earth Engine.
+- [**`a05_clean_cyclones.R`**](code/a05_clean_cyclones.R) Download,
+  clean, and format IBTrACS tropical cyclone data, including cyclone
+  tracks, wind speeds, and Saffir–Simpson categories.
+- [**`a06_download_crw-year.R`**](code/a06_download_crw-year.R) Download
+  annual NOAA Coral Reef Watch SST, SSTA, and Degree Heating Week
+  datasets used in the analyses.
 
 ### Indicators’ extraction (`b_`)
 
-- `b01_extract_population.js` Extract population indicators using
-  [GEE](https://earthengine.google.com/).
-- `b02_extract_crw.R` Extract SST indicators.
-- `b03_extract_cyclones.R` Extract cyclones indicators.
-- `b04_region-characteristics.R` Extract region characteristics.
+- [**`b01_extract_population.js`**](code/b01_extract_population.js)
+  Extract human population indicators around coral reefs using the
+  Gridded Population of the World dataset in Google Earth Engine.
+- [**`b02_extract_crw.R`**](code/b02_extract_crw.R) Extract NOAA Coral
+  Reef Watch sea surface temperature and Degree Heating Week indicators
+  for GCRMN regions and subregions.
+- [**`b03_extract_cyclones.R`**](code/b03_extract_cyclones.R) Identify
+  and characterise tropical cyclones passing within 100 km of coral
+  reefs in each GCRMN subregion.
+- [**`b04_region-characteristics.R`**](code/b04_region-characteristics.R)
+  Calculate geographic characteristics of GCRMN regions, including the
+  number of countries and territories and their latitudinal and
+  longitudinal extents.
+- [**`b05_region-maritime-area.js`**](code/b05_region-maritime-area.js)
+  Estimate the maritime area and geographic extent of each GCRMN region
+  using Google Earth Engine.
 
-### Models (benthic cover) (`c_`)
+### Benthic-cover modelling (`c_`)
 
-- `c01_explo_benthic-data.qmd` Exploratory analyses of benthic cover
-  data.
-- `c02_select_pred-sites.R`  
-- `c03_extract_predictor_gee.js`
-- `c04_extract_predictor_gravity.R`
-- `c05_extract_predictor_enso.R`
-- `c06_extract_predictor_cyclones.R`
-- `c07_extract_predictor_crw.R`
-- `c08_model_data-preparation.R`
-- `c09_xgboost-model.R`
-- 
-- `c11_format-results.R`
+- [**`c01_explo_benthic-data.qmd`**](code/c01_explo_benthic-data.qmd)
+  Perform exploratory analyses of the benthic cover dataset, including
+  its spatial, temporal, and taxonomic coverage.
+- [**`c02_model_data-preparation.R`**](code/c02_model_data-preparation.R)
+  Combine benthic observations with spatial, environmental, climatic,
+  and anthropogenic predictors and prepare the datasets used for
+  modelling.
+- [**`c03_format-results.R`**](code/c03_format-results.R) Combine and
+  format hierarchical Bayesian model outputs across global, regional,
+  subregional, and ecoregional levels for subsequent analyses and
+  figures.
 
 ### Figures and tables (`d_`)
 
-- `d01_geography-maps.R`  
-- `d02_spatio-temporal.R`
-- `d03_cyclones.R`
-- `d04_crw.R`
-- `d05_population.R`
-- `d06_reef-extent.R`
-- `d07_benthic-cover_trends.R`
-- `d08_case-studies.R`
+- [**`d01_geography-maps.R`**](code/d01_geography-maps.R) Generate the
+  global and regional geographic maps used throughout the report.
+- [**`d02_spatio-temporal.R`**](code/d02_spatio-temporal.R) Generate
+  figures and summary statistics describing the spatial and temporal
+  distribution of coral reef monitoring data.
+- [**`d03_cyclones.R`**](code/d03_cyclones.R) Generate figures and
+  summary statistics describing tropical cyclone exposure across GCRMN
+  regions.
+- [**`d04_crw.R`**](code/d04_crw.R) Generate figures and summary
+  statistics describing sea surface temperature, thermal anomalies, and
+  heat stress.
+- [**`d05_population.R`**](code/d05_population.R) Generate figures and
+  summary statistics describing human population around coral reefs.
+- [**`d06_reef-extent.R`**](code/d06_reef-extent.R) Calculate and export
+  coral reef extent and the relative contribution of each GCRMN region
+  and subregion to global reef area.
+- [**`d07_benthic-cover_trends.R`**](code/d07_benthic-cover_trends.R)
+  Generate figures and tables describing modelled temporal trends in
+  benthic cover at global and regional scales.
+- [**`d08_case-studies_boxes.R`**](code/d08_case-studies_boxes.R)
+  Generate figures and analyses used in the case studies and boxes
+  presented throughout the report.
+- [**`d09_materials-methods.R`**](code/d09_materials-methods.R) Generate
+  methodological figures illustrating the spatial weighting and
+  reef-area components of the modelling framework.
+- [**`d10_coral-cover-scenarios.r`**](code/d10_coral-cover-scenarios.r)
+  Simulate future global hard coral cover under different disturbance
+  and recovery scenarios and generate the corresponding figure.
+- [**`d11_executive-summary.R`**](code/d11_executive-summary.R) Generate
+  figures for the Executive Summary.
 
 ### Functions
 
-- `data_descriptors.R` Get number of sites, surveys, datasets, first and
-  last year of monitoring.
-- `extract_coeff.R` Extract slope from linear regression.
-- `graphical_par.R` Graphical parameters, including colors and fonts.
-- `map_region_geography.R` Map of region (geography).
-- `map_region_monitoring.R` Map of region (monitoring).
-- `map_sphere.R` Map of region (sphere).
-- `plot_trends_model.R` Plot temporal trends from models.
-- `plot_trends_raw.R` Plot temporal trends from raw data.
-- `prepare_benthic_data.R` Prepare benthic cover data for models.
-- `theme_graph.R` Main ggplot theme for the plots of the reports.
-- `theme_map.R` Main ggplot theme for the maps of the reports.
+The [**`code/function`**](code/function) directory contains functions
+and graphical parameters reused across scripts.
+
+- [**`data_descriptors.R`**](code/function/data_descriptors.R) Calculate
+  key descriptors of benthic monitoring data, including numbers of
+  datasets, sites and surveys, and monitoring period.
+- [**`extract_coeff.R`**](code/function/extract_coeff.R) Extract the
+  intercept and slope from a linear regression.
+- [**`graphical_par.R`**](code/function/graphical_par.R) Define common
+  graphical parameters, including fonts, colour palettes, and figure
+  resolution.
+- [**`map_region_geography.R`**](code/function/map_region_geography.R)
+  Generate geographic maps for individual GCRMN regions.
+- [**`map_region_monitoring.R`**](code/function/map_region_monitoring.R)
+  Generate regional maps showing the spatial distribution and monitoring
+  history of benthic survey sites.
+- [**`map_sphere.R`**](code/function/map_sphere.R) Generate orthographic
+  globe maps highlighting individual GCRMN regions.
+- [**`plot_trends_model.R`**](code/function/plot_trends_model.R) Plot
+  modelled benthic-cover trends and credible intervals at global,
+  regional, subregional, and ecoregional scales.
+- [**`plot_trends_raw.R`**](code/function/plot_trends_raw.R) Plot
+  temporal trends directly from observed benthic-cover data.
+- [**`prepare_benthic_data.R`**](code/function/prepare_benthic_data.R)
+  Aggregate and format benthic observations into the main benthic
+  categories used for exploration and modelling.
+- [**`script_case-study_mgr.R`**](code/function/script_case-study_mgr.R)
+  Generate the multi-panel figure used for the case study examining
+  changes in coral reef condition and community composition.
+- [**`theme_graph.R`**](code/function/theme_graph.R) Define the common
+  *ggplot2* theme used for graphs throughout the report.
+- [**`theme_map.R`**](code/function/theme_map.R) Define the common
+  *ggplot2* theme used for maps throughout the report.
+- [**`transform_ribbons.R`**](code/function/transform_ribbons.R)
+  Transform model outputs to control the display of uncertainty ribbons
+  according to the temporal availability of observed data.
 
 ## 4. Reproducibility parameters
 
