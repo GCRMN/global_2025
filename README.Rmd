@@ -15,49 +15,26 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 # **Status of Coral Reefs of the World: 2025**
 
-## 1. Introduction [<img src='misc/2025-11-17_report-page-cover.jpg' align="right" height="300" />](https://gcrmn.net/2025-report/)
+## 1. Introduction [<img src='misc/2025-11-17_report-page-cover.jpg' align="right" height="300" />](https://doi.org/10.59387/LFPR6347)
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.
-Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies
-sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius
-a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy
-molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.
-Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium
-a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra
-tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede.
-Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit
-sodales. Vestibulum ante ipsum primis in faucibus orci luctus et
-ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed pede
-pellentesque fermentum. Maecenas adipiscing ante non diam sodales
-hendrerit.
+Coral reefs are increasingly threatened by anthropogenic activities, from climate change-induced disturbances such as marine heatwaves to local stressors including overfishing, pollution, and coastal development. The cumulative impacts of these stressors have profoundly altered the structure, function, and composition of coral reef ecosystems worldwide. One of the most widely documented consequences is the decline in hard coral cover, largely driven by the global coral bleaching events recorded in 1998, 2010, 2016, and 2024. Beyond their ecological consequences, the degradation of coral reefs undermines the capacity of these ecosystems to provide essential services to human populations, including coastal protection, food security through fisheries, and income from tourism.
 
-Ut velit mauris, egestas sed, gravida nec, ornare ut, mi. Aenean ut orci
-vel massa suscipit pulvinar. Nulla sollicitudin. Fusce varius, ligula
-non tempus aliquam, nunc turpis ullamcorper nibh, in tempus sapien eros
-vitae ligula. Pellentesque rhoncus nunc et augue. Integer id felis.
-Curabitur aliquet pellentesque diam. Integer quis metus vitae elit
-lobortis egestas. Lorem ipsum dolor sit amet, consectetuer adipiscing
-elit. Morbi vel erat non mauris convallis vehicula. Nulla et sapien.
-Integer tortor tellus, aliquam faucibus, convallis id, congue eu, quam.
-Mauris ullamcorper felis vitae erat. Proin feugiat, augue non elementum
-posuere, metus purus iaculis lectus, et tristique ligula justo vitae
-magna.
+Established in 1995 as an operational network of the International Coral Reef Initiative ([ICRI](https://icriforum.org/)), the Global Coral Reef Monitoring Network ([GCRMN](https://gcrmn.net/)) plays a central role in coordinating and strengthening coral reef monitoring worldwide. Working through ten regional nodes, the GCRMN produces regular assessments of the status and trends of coral reefs based on harmonised scientific data collected by monitoring programmes around the world. Its mission is to improve understanding of coral reef condition and change, support evidence-based policy and management, and strengthen the technical and human capacity for reef monitoring at local, national, regional, and global scales. GCRMN global and regional reports are designed to provide policymakers, managers, researchers, and international organisations with robust scientific evidence to inform coral reef conservation and management and to support countries in meeting national and international biodiversity commitments. Since its establishment, the GCRMN has published seven global reports, complemented by numerous regional and thematic assessments documenting the status and trends of coral reefs across its ten regions.
 
-Aliquam convallis sollicitudin purus. Praesent aliquam, enim at
-fermentum mollis, ligula massa adipiscing nisl, ac euismod nibh nisl eu
-lectus. Fusce vulputate sem at sapien. Vivamus leo. Aliquam euismod
-libero eu enim. Nulla nec felis sed leo placerat imperdiet. Aenean
-suscipit nulla in justo. Suspendisse cursus rutrum augue. Nulla
-tincidunt tincidunt mi. Curabitur iaculis, lorem vel rhoncus faucibus,
-felis magna fermentum augue, et ultricies lacus lorem varius purus.
-Curabitur eu amet.
+## 2. About this repository
 
-## 2. Code
+This GitHub repository accompanies the GCRMN report [***Status of Coral Reefs of the World: 2025***](https://doi.org/10.59387/LFPR6347), which provides a comprehensive assessment of the status and trends of shallow-water coral reefs worldwide from 1980 to 2024. The report examines changes in key benthic components - hard coral, macroalgae, and turf algae - and assesses how major pressures affecting coral reef ecosystems have evolved over the past four decades. The report is organised into two main parts. **Part 1** provides a global assessment of coral reef status and trends, while **Part 2** presents assessments for each of the ten GCRMN regions. The report also includes **nine case studies**, which complement the main findings by exploring specific aspects of coral reef ecology, monitoring, and management, and **four boxes**, which provide additional context for interpreting the results and highlight some of the challenges associated with producing large-scale ecological syntheses.
+
+This repository contains the code used to process and analyse the data and produce the results presented in the [***Status of Coral Reefs of the World: 2025***]( https://doi.org/10.59387/LFPR6347). It is intended to support transparency, reproducibility, and reuse of the analytical approaches developed for the global assessment. This repository is complemented by another GitHub repository, the [gcrmn_model_alt](https://github.com/GCRMN/gcrmn_model_alt) repository, which contains scripts for comparing different approaches to modeling benthic cover.
+
+The report's Online Supplementary Materials, including modelled temporal trends in benthic cover and associated outputs, are archived on [Zenodo](https://zenodo.org/records/21824430).
+
+## 3. Code
 
 ### Cleaning and selection (`a_`)
 
 * `a01_select_benthic-data.R` Extract benthic cover data from [gcrmndb_benthos](https://github.com/GCRMN/gcrmndb_benthos).
-* `a02_clean_intersect-reefs.R`
+* `a02_clean_intersect-reefs.R` 
 * `a03_benthic-data_sources.R` Extract lists of datasetID and contributors details.
 * `a04_clean_buffer-reefs.js` Create coral reef buffer polygons at 5, 20, 50, and 100 km using [GEE](https://earthengine.google.com/).
 * `a05_clean_cyclones.R` Clean cyclones data.
@@ -109,12 +86,13 @@ Curabitur eu amet.
 * `theme_graph.R` Main ggplot theme for the plots of the reports.
 * `theme_map.R` Main ggplot theme for the maps of the reports.
 
-## 3. Reproducibility parameters
+## 4. Reproducibility parameters
 
 ```{r echo=FALSE, message=FALSE}
 
 # 1. Print session info ----
 
-devtools::session_info(c("sf", "tidyverse", "tidymodels"))
+devtools::session_info(c("sf", "tidyverse", "tidymodels", "readxl", "terra", "future",
+                         "furrr", "RcppRoll", "lwgeom", "patchwork", "ggtext", "colorspace"))
 
 ```
